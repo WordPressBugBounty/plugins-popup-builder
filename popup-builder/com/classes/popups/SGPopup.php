@@ -24,7 +24,7 @@ abstract class SGPopup
 	private $loadableModes;
 	private $saveMode = '';
 	private $savedPopup = false;
-
+	public static $num_excluded_popups = [];
 
 	public function setId($id)
 	{
@@ -302,7 +302,7 @@ abstract class SGPopup
 
 		$savedData = array();
 		if (file_exists(dirname(__FILE__).'/PopupData.php')) {
-			require_once(dirname(__FILE__).'/PopupData.php');
+			require_once(dirname(__FILE__).'/PopupData.php');			
 			$savedData = PopupData::getPopupDataById($popupId, $saveMode);
 		}
 		$savedData = apply_filters('sgpbPopupSavedData', $savedData);
@@ -317,7 +317,7 @@ abstract class SGPopup
 		}
 
 		$popupClassName = self::getPopupClassNameFormType($type);
-		$typePath = self::getPopupTypeClassPath($type);
+		$typePath = self::getPopupTypeClassPath($type);		
 		if (!file_exists($typePath.$popupClassName.'.php')) {
 			return false;
 		}
@@ -921,14 +921,25 @@ abstract class SGPopup
 	{
 		$currentPost = get_post($popupId);
 
-		if (!empty($currentPost) && $currentPost->post_status == 'draft') {
-			$saveMode = '_preview';
-		}
 		$optionsData = array();
-		if (get_post_meta($popupId, 'sg_popup_options'.$saveMode, true)) {
+		
+		if( get_post_meta($popupId, 'sg_popup_options'.$saveMode, true) )
+		{			
 			$optionsData = get_post_meta($popupId, 'sg_popup_options'.$saveMode, true);
 			if (isset($optionsData['sgpb-subs-gdpr-text'])){
 				$optionsData['sgpb-subs-gdpr-text'] = wp_kses($optionsData['sgpb-subs-gdpr-text'], AdminHelper::allowed_html_tags(false));
+			}
+		}
+		else
+		{
+			if (!empty($currentPost) && $currentPost->post_status == 'draft') {
+				$saveMode = '_preview';
+			}
+			if (get_post_meta($popupId, 'sg_popup_options'.$saveMode, true)) {
+				$optionsData = get_post_meta($popupId, 'sg_popup_options'.$saveMode, true);
+				if (isset($optionsData['sgpb-subs-gdpr-text'])){
+					$optionsData['sgpb-subs-gdpr-text'] = wp_kses($optionsData['sgpb-subs-gdpr-text'], AdminHelper::allowed_html_tags(false));
+				}
 			}
 		}
 
@@ -1787,7 +1798,7 @@ abstract class SGPopup
 		$activePopupsQuery = '';
 		$args = array(
 			'post_type' => SG_POPUP_POST_TYPE,
-			'post_status' => array('trash', 'publish')
+			'post_status' => array('trash', 'publish', 'draft', 'auto-draft')
 		);
 		if (!class_exists('SGPBConfigDataHelper')) {
 			return $activePopupsQuery;
@@ -1795,18 +1806,24 @@ abstract class SGPopup
 		$allPostData = SGPBConfigDataHelper::getQueryDataByArgs($args);
 		$args['checkActivePopupType'] = true;
 		$allPopups = $allPostData->posts;
-		foreach ($allPopups as $post) {
-			$id = $post->ID;
-			$popup = self::find($id, $args);
+		$excludePopupsQuery = [];	
+		foreach ($allPopups as $sgpb_post) {
+			$sgpb_id = $sgpb_post->ID;
+			$popup = self::find($sgpb_id, $args);			
 			if (empty($popup)) {
-				$activePopupsQuery .= $id.', ';
+				$activePopupsQuery .= $sgpb_id.', ';
+				//Moving all INACTIVATED POPUPs with types disabled
+				$popupOptionsData = SGPopup::getPopupOptionsById( $sgpb_id, '');
+				update_post_meta($sgpb_id, 'sg_popup_options_preview', $popupOptionsData);
+				wp_trash_post($sgpb_id);
+				$excludePopupsQuery[$sgpb_id] = $sgpb_post->post_status;
 			}
 		}
+		SGPopup::$num_excluded_popups = $excludePopupsQuery;		
 		if ($activePopupsQuery != '') {
 			$activePopupsQuery = ' AND ID NOT IN ('.$activePopupsQuery.')';
 			$activePopupsQuery = str_replace(', )', ') ', $activePopupsQuery);
 		}
-
 		return $activePopupsQuery;
 	}
 

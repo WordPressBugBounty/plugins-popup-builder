@@ -55,8 +55,8 @@ class PopupLoader
 		if (isset($_GET['sg_popup_id']) || isset($_GET['sg_popup_preview_id']) || $currentUrl !== false) {
 			$args = array();
 			$previewPopups = array();
-			$getterId = isset($_GET['sg_popup_id']) ? (int)sanitize_text_field($_GET['sg_popup_id']) : 0;
-			$previewedPopupId = isset($_GET['sg_popup_preview_id']) ? (int)sanitize_text_field($_GET['sg_popup_preview_id']) : 0;
+			$getterId = isset($_GET['sg_popup_id']) ? (int)sanitize_text_field( wp_unslash( $_GET['sg_popup_id'] ) ) : 0;
+			$previewedPopupId = isset($_GET['sg_popup_preview_id']) ? (int)sanitize_text_field( wp_unslash( $_GET['sg_popup_preview_id'] ) ) : 0;
 			if (isset($_GET['sg_popup_preview_id'])) {
 				$getterId = $previewedPopupId;
 				$args['is-preview'] = true;
@@ -67,7 +67,7 @@ class PopupLoader
 			if ($currentUrl !== false) {
 				$getterId = $previewedPopupId;
 				if (isset($_GET['preview_id'])) {
-					$getterId = (int)sanitize_text_field($_GET['preview_id']);
+					$getterId = (int)sanitize_text_field( wp_unslash( $_GET['preview_id'] ) );
 				}
 			}
 

@@ -38,6 +38,7 @@ class WOOSL_CodeAutoUpdate
 
 	public function init()
 	{
+		// phpcs:ignore plugin_updater_detected
 		add_filter('pre_set_site_transient_update_plugins', array($this, 'check_update'));
 		add_filter('plugins_api', array($this, 'plugins_api_filter'), 10, 3);
 
@@ -117,7 +118,7 @@ class WOOSL_CodeAutoUpdate
 		}
 
 		// Remove our filter on the site transient
-		remove_filter('pre_set_site_transient_update_plugins', array($this, 'check_update'), 10);
+		remove_filter('pre_set_site_transient_update_plugins', array($this, 'check_update'), 10);// phpcs:ignore
 		$update_cache = get_site_transient('update_plugins');
 		$update_cache = is_object( $update_cache ) ? $update_cache : new \stdClass();
 		if (empty($update_cache->response) || empty($update_cache->response[$this->name])) {
@@ -138,6 +139,7 @@ class WOOSL_CodeAutoUpdate
 		}
 
 		// Restore our filter
+		// phpcs:ignore plugin_updater_detected
 		add_filter('pre_set_site_transient_update_plugins', array($this, 'check_update'));
 		if (!empty($update_cache->response[$this->name]) && version_compare($this->version, $version_info->new_version, '<')) {
 			do_action("in_plugin_update_message-{$file}", $plugin, $version_info);

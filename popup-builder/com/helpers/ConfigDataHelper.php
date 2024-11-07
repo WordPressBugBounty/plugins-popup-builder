@@ -27,7 +27,7 @@ class SGPBConfigDataHelper
 			'post_type'        => 'post',
 			'posts_per_page'   => 1000
 		);
-		$args = wp_parse_args($args, $defaultArgs);
+		$args = wp_parse_args($args, $defaultArgs);		
 		$query = new WP_Query($args);
 
 		return $query;
@@ -618,13 +618,13 @@ class SGPBConfigDataHelper
 		);
 
 		$data['weekDaysArray'] = array(
-			'Mon' => __('Monday'),
-			'Tue' => __('Tuesday'),
-			'Wed' => __('Wednesday'),
-			'Thu' => __('Thursday'),
-			'Fri' => __('Friday'),
-			'Sat' => __('Saturday'),
-			'Sun' => __('Sunday')
+			'Mon' => __('Monday', 'popup-builder'),
+			'Tue' => __('Tuesday', 'popup-builder'),
+			'Wed' => __('Wednesday', 'popup-builder'),
+			'Thu' => __('Thursday', 'popup-builder'),
+			'Fri' => __('Friday', 'popup-builder'),
+			'Sat' => __('Saturday', 'popup-builder'),
+			'Sun' => __('Sunday', 'popup-builder')
 		);
 
 		$data['messageResize'] = array(
@@ -1895,13 +1895,13 @@ class ConfigDataHelper
 		);
 
 		$data['weekDaysArray'] = array(
-			'Mon' => __('Monday'),
-			'Tue' => __('Tuesday'),
-			'Wed' => __('Wednesday'),
-			'Thu' => __('Thursday'),
-			'Fri' => __('Friday'),
-			'Sat' => __('Saturday'),
-			'Sun' => __('Sunday')
+			'Mon' => __('Monday', 'popup-builder'),
+			'Tue' => __('Tuesday', 'popup-builder'),
+			'Wed' => __('Wednesday', 'popup-builder'),
+			'Thu' => __('Thursday', 'popup-builder'),
+			'Fri' => __('Friday', 'popup-builder'),
+			'Sat' => __('Saturday', 'popup-builder'),
+			'Sun' => __('Sunday', 'popup-builder')
 		);
 
 		$data['messageResize'] = array(

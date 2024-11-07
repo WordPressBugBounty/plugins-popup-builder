@@ -34,10 +34,10 @@ class SGPBFeedback
 		check_ajax_referer(SG_AJAX_NONCE, 'nonce');
 		if (!empty($_POST['formData'])) {
 			// phpcs:ignore WordPress.Security.ValidatedSanitizedInput.InputNotSanitized
-			parse_str($_POST['formData'],$submissionData);
+			parse_str($_POST['formData'],$submissionData);// phpcs:ignore WordPress.Security.ValidatedSanitizedInput.MissingUnslash
 		}
 		array_walk_recursive($submissionData, function(&$item){
-			$item = sanitize_text_field($item);
+			$item = sanitize_text_field( wp_unslash( $item ) );
 		});
 		$feedbackKey = $feedbackText = 'Skipped';
 		if (!empty($submissionData['reasonKey'])) {

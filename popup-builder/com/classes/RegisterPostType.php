@@ -59,7 +59,7 @@ class RegisterPostType
 
 		$args = array(
 			'labels'              => $labels,
-			'description'         => __('Description.', 'your-plugin-textdomain'),
+			'description'         => __('Description.', 'popup-builder'),
 			// Exclude_from_search
 			'exclude_from_search' => true,
 			'public'              => true,
@@ -146,7 +146,7 @@ class RegisterPostType
 		$popupId = 0;
 
 		if (!empty($_GET['post'])) {
-			$popupId = (int)sanitize_text_field($_GET['post']);
+			$popupId = (int)sanitize_text_field( wp_unslash( $_GET['post'] ) );
 		}
 
 		$popupType = $this->getPopupTypeName();
@@ -165,14 +165,14 @@ class RegisterPostType
 		 * if the post id doesn't exist, we try to find it with $_GET['sgpb_type']
 		 */
 		if (!empty($_GET['post'])) {
-			$popupId = (int)sanitize_text_field($_GET['post']);
+			$popupId = (int)sanitize_text_field( wp_unslash( $_GET['post'] ) );
 			$popupOptionsData = SGPopup::getPopupOptionsById($popupId);
 			if (!empty($popupOptionsData['sgpb-type'])) {
 				$popupType = $popupOptionsData['sgpb-type'];
 			}
 		}
 		else if (!empty($_GET['sgpb_type'])) {
-			$popupType = sanitize_text_field($_GET['sgpb_type']);
+			$popupType = sanitize_text_field( wp_unslash( $_GET['sgpb_type'] ) );
 		}
 
 		return $popupType;

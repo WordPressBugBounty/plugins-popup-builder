@@ -89,7 +89,7 @@ class Updates
 	private function sgpbVerifyNonceLicense()
 	{
 		/* Validate nonce */			
-		$nonce = isset( $_POST['sgpb_nonce'] ) ? sanitize_text_field( $_POST['sgpb_nonce'] ) : '';			
+		$nonce = isset( $_POST['sgpb_nonce'] ) ? sanitize_text_field(  wp_unslash( $_POST['sgpb_nonce'] ) ) : '';			
 		
 		if ( empty( $nonce ) || !wp_verify_nonce( $nonce, 'sgpb_nonce' ) ) {
 			$message = __('You do not have permission to access this page!', 'popup-builder');
@@ -195,9 +195,9 @@ class Updates
 	public function sgpbAdminNotices()
 	{
 		if (isset($_GET['sl_activation']) && !empty($_GET['message'])) {
-			switch (sanitize_text_field($_GET['sl_activation'])) {
+			switch (sanitize_text_field( wp_unslash( $_GET['sl_activation'] ) ) ) {
 				case 'false':
-					$message = urldecode(sanitize_text_field($_GET['message']));
+					$message = urldecode(sanitize_text_field( wp_unslash( $_GET['message'] ) ) );
 					?>
 					<div class="error">
 						<h3><?php echo esc_html($message); ?></h3>

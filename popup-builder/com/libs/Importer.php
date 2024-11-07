@@ -49,7 +49,7 @@ class WP_Import extends WP_Importer
 	{
 		$this->header();
 
-		$step = empty($_GET['step']) ? 0 : (int) $_GET['step'];
+		$step = isset($_GET['step']) ? intval($_GET['step']) : 0;  // Ensures integer for the step
 		switch ($step) {
 			case 0:
 				$this->greet();
@@ -63,9 +63,11 @@ class WP_Import extends WP_Importer
 			case 2:
 				check_admin_referer('import-wordpress');
 				$this->fetch_attachments = (!empty($_POST['fetch_attachments']) && $this->allow_fetch_attachments());
-				$this->id = (int) sanitize_text_field($_POST['import_id']);
-				$file = get_attached_file($this->id);
-				set_time_limit(0);
+				$this->id = isset($_POST['import_id']) ? (int) sanitize_text_field( wp_unslash( $_POST['import_id'] ) ) : 0;
+				$file = get_attached_file($this->id);				
+				if ( function_exists( 'set_time_limit' ) ) {
+				    @set_time_limit(0); // phpcs:ignore Squiz.PHP.DiscouragedFunctions.Discouraged	
+				}
 				$this->import($file);
 				break;
 		}
@@ -95,6 +97,7 @@ class WP_Import extends WP_Importer
 		wp_suspend_cache_invalidation(false);
 
 		// update incorrect/missing information in the DB
+		$this->backfill_parents();
 		$this->backfill_attachment_urls();
 		$this->remap_featured_images();
 
@@ -114,7 +117,11 @@ class WP_Import extends WP_Importer
 			$this->footer();
 			die();
 		}
-
+		$file_type = wp_check_filetype($file);
+		if (!in_array($file_type['ext'], array('csv', 'xml'))) {
+			echo '<p><strong>' . esc_html(__('Invalid file type.', 'popup-builder')) . '</strong><br />';
+			die();
+		}
 		$import_data = $this->parse($file);
 
 		if (is_wp_error($import_data)) {
@@ -325,7 +332,7 @@ class WP_Import extends WP_Importer
 		}
 		
 		/* Validate nonce */			
-		$nonce = isset( $_POST['_wpnonce'] ) ? sanitize_text_field( $_POST['_wpnonce'] ) : '';	
+		$nonce = isset( $_POST['_wpnonce'] ) ? sanitize_text_field( wp_unslash( $_POST['_wpnonce'] ) ) : '';	
 		
 		if ( empty( $nonce ) || !wp_verify_nonce( $nonce, 'import-wordpress' ) ) { 		
 			return;
@@ -337,13 +344,13 @@ class WP_Import extends WP_Importer
 
 		$create_users = $this->allow_create_users();
 
-		foreach ((array) $_POST['imported_authors'] as $i => $old_login) {
+		foreach ( wp_unslash( (array) $_POST['imported_authors'] ) as $i => $old_login) {
 			// Multisite adds strtolower to sanitize_user. Need to sanitize here to stop breakage in process_posts.
 			$santized_old_login = sanitize_user($old_login, true);
 			$old_id = isset($this->authors[$old_login]['author_id']) ? intval($this->authors[$old_login]['author_id']) : false;
 
 			if (!empty($_POST['user_map'][$i])) {
-				$user = get_userdata(intval($_POST['user_map'][$i]));
+				$user = get_userdata(intval( wp_unslash( $_POST['user_map'][$i] ) ) );
 				if (isset($user->ID)) {
 					if ($old_id)
 						$this->processed_authors[$old_id] = $user->ID;
@@ -351,7 +358,7 @@ class WP_Import extends WP_Importer
 				}
 			} else if ($create_users) {
 				if (!empty($_POST['user_new'][$i])) {
-					$user_id = wp_create_user( sanitize_user( $_POST['user_new'][$i] ), wp_generate_password());
+					$user_id = wp_create_user( sanitize_user( wp_unslash( $_POST['user_new'][$i] ) ), wp_generate_password());
 				} else if ($this->version != '1.0') {
 					$user_data = array(
 						'user_login' => $old_login,

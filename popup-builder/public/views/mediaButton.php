@@ -7,7 +7,7 @@
 	$defaultData = \SGPBConfigDataHelper::defaultData();
 	$excludePostId = 0;
 	if (isset($_GET['post']) && !empty($_GET['post'])) {
-		$excludePostId = sanitize_text_field($_GET['post']);
+		$excludePostId = sanitize_text_field( wp_unslash( $_GET['post'] ) );
 	}
 	$excludedPopups = array($excludePostId);
 	$allPopups = AdminHelper::getPopupsIdAndTitle($excludedPopups);

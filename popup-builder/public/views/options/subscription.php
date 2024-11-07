@@ -13,7 +13,7 @@
 	$popupId = 0;
 
 	if (!empty($_GET['post'])) {
-		$popupId = (int)sanitize_text_field($_GET['post']);
+		$popupId = (int)sanitize_text_field( wp_unslash( $_GET['post'] ) );
         $popupTypeObj->setSubsFormData($popupId);
 	}
 

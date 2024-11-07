@@ -109,8 +109,8 @@ class SGPBTable extends SGPBListTable
 
 		$totalPages = ceil($totalItems/$perPage);
 
-		$orderby = isset($_GET['orderby']) ? sanitize_sql_orderby($_GET['orderby']) : 'ASC';
-		$order = isset($_GET['order']) ? sanitize_sql_orderby($_GET['order']) : '';
+		$orderby = isset($_GET['orderby']) ? sanitize_sql_orderby( wp_unslash( $_GET['orderby'] ) ) : 'ASC';
+		$order = isset($_GET['order']) ? sanitize_sql_orderby( wp_unslash( $_GET['order'] ) ) : '';
 
 		if (isset($this->initialOrder) && empty($order)) {
 			foreach ($this->initialOrder as $key => $value) {
@@ -234,13 +234,13 @@ class SGPBTable extends SGPBListTable
 		$input_id = $input_id . '-search-input';
 
 		if ( ! empty( $_REQUEST['orderby'] ) )
-			echo '<input type="hidden" name="orderby" value="' . esc_attr( sanitize_text_field($_REQUEST['orderby']) ) . '" />';
+			echo '<input type="hidden" name="orderby" value="' . esc_attr( sanitize_text_field( wp_unslash( $_REQUEST['orderby'] ) ) ) . '" />';
 		if ( ! empty( $_REQUEST['order'] ) )
-			echo '<input type="hidden" name="order" value="' . esc_attr( sanitize_text_field($_REQUEST['order']) ) . '" />';
+			echo '<input type="hidden" name="order" value="' . esc_attr( sanitize_text_field( wp_unslash( $_REQUEST['order'] ) ) ) . '" />';
 		if ( ! empty( $_REQUEST['post_mime_type'] ) )
-			echo '<input type="hidden" name="post_mime_type" value="' . esc_attr( sanitize_text_field($_REQUEST['post_mime_type']) ) . '" />';
+			echo '<input type="hidden" name="post_mime_type" value="' . esc_attr( sanitize_text_field( wp_unslash( $_REQUEST['post_mime_type'] ) ) ) . '" />';
 		if ( ! empty( $_REQUEST['detached'] ) )
-			echo '<input type="hidden" name="detached" value="' . esc_attr( sanitize_text_field($_REQUEST['detached']) ) . '" />';
+			echo '<input type="hidden" name="detached" value="' . esc_attr( sanitize_text_field( wp_unslash( $_REQUEST['detached'] ) ) ) . '" />';
 		?>
 			<div class="search search-box">
 				<input type="search" class="search__input" id="<?php echo esc_attr($input_id) ?>" name="s" value="<?php _admin_search_query(); ?>" />
@@ -289,7 +289,7 @@ class SGPBTable extends SGPBListTable
 	}
 
 	public function no_items() {
-		esc_html_e( 'No items found.' );
+		esc_html_e( 'No items found.','popup-builder' );
 	}
 
 	public function has_items() {
@@ -299,13 +299,13 @@ class SGPBTable extends SGPBListTable
 	public function print_column_headers( $with_id = true ) {
 		list( $columns, $hidden, $sortable, $primary ) = $this->get_column_info();
 		// phpcs:ignore WordPress.Security.ValidatedSanitizedInput.InputNotSanitized,WordPress.Security.ValidatedSanitizedInput.InputNotValidated
-		$sbpb_server_host = isset($_SERVER['HTTP_HOST']) ? sanitize_text_field( $_SERVER['HTTP_HOST'] ) : '';
-		$sbpb_server_requesturi = isset($_SERVER['REQUEST_URI']) ? sanitize_text_field( $_SERVER['REQUEST_URI'] ) : '';
+		$sbpb_server_host = isset($_SERVER['HTTP_HOST']) ? sanitize_text_field( wp_unslash( $_SERVER['HTTP_HOST'] ) ) : '';
+		$sbpb_server_requesturi = isset($_SERVER['REQUEST_URI']) ? sanitize_text_field( wp_unslash( $_SERVER['REQUEST_URI'] ) ) : '';
 		$current_url = set_url_scheme( 'http://' . $sbpb_server_host. $sbpb_server_requesturi );
 		$current_url = remove_query_arg( 'paged', $current_url );
 
 		if ( isset( $_GET['orderby'] ) )
-			$current_orderby = sanitize_text_field($_GET['orderby']);
+			$current_orderby = sanitize_text_field( wp_unslash( $_GET['orderby'] ) );
 		else
 			$current_orderby = '';
 

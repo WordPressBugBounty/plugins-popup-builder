@@ -234,7 +234,7 @@ class SGPBNotificationCenter
 	{
 		check_ajax_referer(SG_AJAX_NONCE, 'nonce');
 
-		$notificationId = isset($_POST['id']) ? sanitize_text_field($_POST['id']) : '';
+		$notificationId = isset($_POST['id']) ? sanitize_text_field( wp_unslash( $_POST['id'] ) ) : '';
 		$allDismissedNotifications = self::getAllDismissedNotifications();
 		$allDismissedNotifications[$notificationId] = $notificationId;
 		$allDismissedNotifications = wp_json_encode($allDismissedNotifications);
@@ -253,7 +253,7 @@ class SGPBNotificationCenter
 		if (!isset($_POST['id'])){
 			wp_die(0);
 		}
-		$notificationId = sanitize_text_field($_POST['id']);
+		$notificationId = sanitize_text_field( wp_unslash( $_POST['id'] ) );
 		$allRemovedNotifications = self::getAllRemovedNotifications();
 		$allRemovedNotifications[$notificationId] = $notificationId;
 		$allRemovedNotifications = wp_json_encode($allRemovedNotifications);
@@ -269,7 +269,7 @@ class SGPBNotificationCenter
 		if (!isset($_POST['id'])){
 			wp_die(0);
 		}
-		$notificationId = sanitize_text_field($_POST['id']);
+		$notificationId = sanitize_text_field( wp_unslash( $_POST['id'] ) );
 		$allDismissedNotifications = self::getAllDismissedNotifications();
 		if (isset($allDismissedNotifications[$notificationId])) {
 			unset($allDismissedNotifications[$notificationId]);

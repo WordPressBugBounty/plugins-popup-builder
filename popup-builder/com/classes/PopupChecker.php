@@ -620,7 +620,7 @@ class PopupChecker
 		if (is_wp_error($postLanguage)) {
 			return true;
 		}
-		if (!empty($_GET['lang']) && (sanitize_text_field($_GET['lang']) == $popupLanguage)) {
+		if (!empty($_GET['lang']) && (sanitize_text_field( wp_unslash( $_GET['lang'] ) ) == $popupLanguage)) {
             return true;
         }
 		if ($postLanguage['language_code'] != $popupLanguage) {

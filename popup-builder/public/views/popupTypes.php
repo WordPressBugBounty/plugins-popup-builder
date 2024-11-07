@@ -86,4 +86,3 @@ if (!empty($extensions['noActive'])) : ?>
         });
 	});");
 ?>
-

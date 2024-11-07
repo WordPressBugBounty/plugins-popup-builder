@@ -4,7 +4,7 @@ if ( ! defined( 'ABSPATH' ) ) {
 	exit;
 }
 use sgpb\AdminHelper;
-$popupId = !empty($_GET['post']) ? (int)sanitize_text_field($_GET['post']) : 0;
+$popupId = !empty($_GET['post']) ? (int)sanitize_text_field( wp_unslash( $_GET['post'] ) ) : 0;
 $editorModeJs = htmlentities('text/javascript');
 $editorModeCss = htmlentities('text/css');
 

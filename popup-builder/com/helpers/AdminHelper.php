@@ -346,7 +346,7 @@ class AdminHelper
 		$query .= ' LEFT JOIN '.$postsTablename.' ON '.$postsTablename.'.ID='.$subscribersTablename.'.subscriptionType';
 		
 		if (isset($_GET['sgpb-subscription-popup-id']) && !empty($_GET['sgpb-subscription-popup-id'])) {
-			$filterCriteria = sanitize_text_field($_GET['sgpb-subscription-popup-id']);
+			$filterCriteria = sanitize_text_field( wp_unslash( $_GET['sgpb-subscription-popup-id'] ) );
 			if ($filterCriteria != 'all') {
 				$searchQuery .= " AND (subscriptionType = %s)";
 				$array_mapping_search[] = esc_sql((int)$filterCriteria);
@@ -356,7 +356,7 @@ class AdminHelper
 			$searchQuery .= ' AND ';
 		}
 		if (isset($_GET['s']) && !empty($_GET['s'])) {
-			$searchCriteria = sanitize_text_field($_GET['s']);
+			$searchCriteria = sanitize_text_field( wp_unslash( $_GET['s'] ) );
 			$lastPartOfTheQuery = substr($searchQuery, -5);
 			if (strpos($lastPartOfTheQuery, 'AND') <= 0) {
 				$searchQuery .= ' AND ';
@@ -369,7 +369,7 @@ class AdminHelper
 			$array_mapping_search[] = $searchCriteria;
 		}
 		if (isset($_GET['sgpb-subscribers-date']) && !empty($_GET['sgpb-subscribers-date'])) {
-			$filterCriteriaDate = sanitize_text_field($_GET['sgpb-subscribers-date']);
+			$filterCriteriaDate = sanitize_text_field( wp_unslash( $_GET['sgpb-subscribers-date'] ) );
 			if ($filterCriteriaDate != 'all') {
 				if ($searchQuery != '') {
 					$searchQuery .= ' AND ';
@@ -806,13 +806,13 @@ class AdminHelper
 	{
 		$type = '';
 		if (!empty($_GET['sgpb_type'])) {
-			$type  = sanitize_text_field($_GET['sgpb_type']);
+			$type  = sanitize_text_field( wp_unslash( $_GET['sgpb_type'] ) );
 		}
 
 		$currentPostType = self::getCurrentPostType();
 
 		if ($currentPostType == SG_POPUP_POST_TYPE && !empty($_GET['post'])) {
-			$popupObj = SGPopup::find(sanitize_text_field($_GET['post']));
+			$popupObj = SGPopup::find(sanitize_text_field( wp_unslash( $_GET['post'] ) ) );
 			if (is_object($popupObj)) {
 				$type = $popupObj->getType();
 			}
@@ -837,7 +837,7 @@ class AdminHelper
 		}
 
 		if (empty($currentPostType) && !empty($_GET['post'])) {
-			$currentPostType = get_post_type(sanitize_text_field($_GET['post']));
+			$currentPostType = get_post_type(sanitize_text_field( wp_unslash( $_GET['post'] ) ) );
 		}
 
 		return $currentPostType;
@@ -989,7 +989,7 @@ class AdminHelper
 		$content .= '<a class="btn btn-info" target="_blank" href="https://wordpress.org/support/plugin/popup-builder"><span class="dashicons sgpb-dashicons-admin-plugins sgpb-info-text-white"></span>'.__('Support Forum', 'popup-builder').'</a>';
 		$content .= '<a class="btn btn-info" target="_blank" href="'.SG_POPUP_STORE_URL.'"><span class="dashicons sgpb-dashicons-editor-help sgpb-info-text-white"></span>'.__('LIVE chat', 'popup-builder').'</a>';
 		$content .= '<a class="btn btn-info" target="_blank" href="mailto:support@popup-builder.com?subject=Hello"><span class="dashicons sgpb-dashicons-email-alt sgpb-info-text-white"></span>'.__('Email', 'popup-builder').'</a></div>';
-		$content .= '<div class="sgpb-support-notification-dont-show">'.__('Bored of this?').'<a class="sgpb-dont-show-again-support-notification" href="javascript:void(0)">'.__(' Press here ').'</a>'.__('and we will not show it again!').'</div>';
+		$content .= '<div class="sgpb-support-notification-dont-show">'.__('Bored of this?', 'popup-builder').'<a class="sgpb-dont-show-again-support-notification" href="javascript:void(0)">'.__(' Press here ', 'popup-builder').'</a>'.__('and we will not show it again!', 'popup-builder').'</div>';
 
 		return $content;
 	}
@@ -1731,7 +1731,7 @@ class AdminHelper
 
 				$key = $singleExntensionData['options']['licence']['key'];
 				$name = $singleExntensionData['options']['licence']['itemName'];
-				$licenseKey = __('No license');
+				$licenseKey = __('No license', 'popup-builder');
 				if (!empty($key)) {
 					$licenseKey = self::getOption('sgpb-license-key-'.$key);
 				}
@@ -1806,7 +1806,7 @@ class AdminHelper
 		$systemInfoContent .= "\n".'-- Webserver Configuration'."\n\n";
 		$systemInfoContent .= 'PHP Version:              '.PHP_VERSION."\n";
 		$systemInfoContent .= 'MySQL Version:            '.$wpdb->db_version()."\n";		
-		$serverinfo = isset($_SERVER['SERVER_SOFTWARE']) ? sanitize_text_field($_SERVER['SERVER_SOFTWARE']) : '';
+		$serverinfo = isset($_SERVER['SERVER_SOFTWARE']) ? sanitize_text_field( wp_unslash( $_SERVER['SERVER_SOFTWARE'] ) ) : '';
 		$systemInfoContent .= 'Webserver Info:           '.$serverinfo."\n";
 		// PHP configs... now we're getting to the important stuff
 		$systemInfoContent .= "\n".'-- PHP Configuration'."\n\n";
@@ -1876,12 +1876,12 @@ class AdminHelper
 		else if (strpos(DB_HOST, '.sysfix.eu') !== false) {
 			return 'SysFix.eu Power Hosting';
 		}
-		else if (isset($_SERVER['SERVER_NAME']) && strpos($_SERVER['SERVER_NAME'], 'Flywheel') !== false) {
+		else if (isset($_SERVER['SERVER_NAME']) && strpos( sanitize_text_field( wp_unslash( $_SERVER['SERVER_NAME'] ) ), 'Flywheel') !== false) {
 			return 'Flywheel';
 		}
 		else {
 			// Adding a general fallback for data gathering
-			$servername = isset($_SERVER['SERVER_NAME']) ? sanitize_text_field($_SERVER['SERVER_NAME']) : '';
+			$servername = isset($_SERVER['SERVER_NAME']) ? sanitize_text_field( wp_unslash( $_SERVER['SERVER_NAME'] ) ) : '';
 			return 'DBH: '.DB_HOST.', SRV: '.$servername;
 		}
 	}
@@ -2139,8 +2139,8 @@ class AdminHelper
 	{
 		$imageId = attachment_url_to_postid($imageUrl);
 		$altText = get_post_meta($imageId, '_wp_attachment_image_alt', true);
-
-		return $altText;
+		
+		return esc_attr( $altText );
 	}
 
 	public static function hasBlocks($content)
@@ -2548,5 +2548,20 @@ class AdminHelper
 		}		
 		return $sgpb_message;
 	}
-	
+	public static function decrypt_data( $encrypted_data ) 
+	{
+		$secret_key = 'sgpbf9c2b4e569a24d3e04bbfd25c8a5d8f2f91575ecf5ef64f7e9a09d3b53c74b96'; 
+		$cipher_method = 'AES-256-CBC';
+		$iv_length = openssl_cipher_iv_length($cipher_method);
+		
+		// Decode base64 encoded data
+		$decoded_data = base64_decode($encrypted_data);
+		
+		// Extract the IV and encrypted data
+		$iv = substr($decoded_data, 0, $iv_length);
+		$encrypted_data = substr($decoded_data, $iv_length);
+		
+		// Decrypt the data
+		return openssl_decrypt($encrypted_data, $cipher_method, $secret_key, 0, $iv);
+	}	
 }

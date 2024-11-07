@@ -97,7 +97,7 @@ class SGPBSubscribers extends SGPBTable
 		$selectedPopup = '';
 
 		if (isset($_GET['sgpb-subscription-popup-id'])) {
-			$selectedPopup = (int)sanitize_text_field($_GET['sgpb-subscription-popup-id']);
+			$selectedPopup = (int)sanitize_text_field( wp_unslash( $_GET['sgpb-subscription-popup-id'] ) );
 		}
 		$allowed_html = AdminHelper::allowed_html_tags();
 		ob_start();
@@ -141,7 +141,7 @@ class SGPBSubscribers extends SGPBTable
 		$selected = '';
 
 		if (isset($_GET['sgpb-subscribers-date'])) {
-			$selectedDate = sanitize_text_field($_GET['sgpb-subscribers-date']);
+			$selectedDate = sanitize_text_field( wp_unslash( $_GET['sgpb-subscribers-date'] ) );
 		}
 		$allowed_html = AdminHelper::allowed_html_tags();
 

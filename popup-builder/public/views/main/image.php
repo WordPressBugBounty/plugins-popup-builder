@@ -6,7 +6,7 @@ if ( ! defined( 'ABSPATH' ) ) {
 ?>
 <div class="sgpb sgpb-wrapper sgpb-media-upload sgpb-display-flex sgpb-align-item-center sgpb-padding-20">
     <div class="formItem sgpb-display-inline-flex sgpb-flex-direction-column sgpb-margin-right-50">
-        <span class="formItem__title sgpb-margin-0"><?php esc_html_e('Please choose your picture');?>:</span>
+        <span class="formItem__title sgpb-margin-0"><?php esc_html_e('Please choose your picture','popup-builder');?>:</span>
         <input class="formItem__input formItem__input_sgpb-popup-overlay"
                id="js-upload-image"
                type="text" size="36" name="sgpb-image-url"

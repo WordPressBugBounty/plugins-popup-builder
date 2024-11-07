@@ -123,7 +123,7 @@ class SGPBReports
 
 		foreach ($essentialsgpbCookies as $essentialcookieName) {
 			if (isset($_COOKIE[$essentialcookieName])) {
-				$cookieValue = sanitize_text_field( $_COOKIE[$essentialcookieName] );	
+				$cookieValue = sanitize_text_field(  wp_unslash( $_COOKIE[$essentialcookieName] ) );	
 				if( !empty( $cookieValue ) )
 				{
 					if (strpos($essentialcookieName, (string)$popupId) !== false) {

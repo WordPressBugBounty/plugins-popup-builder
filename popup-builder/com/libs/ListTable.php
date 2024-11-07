@@ -143,8 +143,8 @@ class SGPBListTable {
 
 		if ( empty( $this->modes ) ) {
 			$this->modes = array(
-				'list'    => __( 'List View' ),
-				'excerpt' => __( 'Excerpt View' )
+				'list'    => __( 'List View', 'popup-builder' ),
+				'excerpt' => __( 'Excerpt View', 'popup-builder' )
 			);
 		}
 	}
@@ -318,7 +318,7 @@ class SGPBListTable {
 	 * @access public
 	 */
 	public function no_items() {
-		esc_html_e( 'No items found.' );
+		esc_html_e( 'No items found.', 'popup-builder' );
 	}
 
 	/**
@@ -336,13 +336,13 @@ class SGPBListTable {
 		$input_id = $input_id . '-search-input';
 
 		if ( ! empty( $_REQUEST['orderby'] ) )
-			echo '<input type="hidden" name="orderby" value="' . esc_attr( sanitize_text_field($_REQUEST['orderby']) ) . '" />';
+			echo '<input type="hidden" name="orderby" value="' . esc_attr( sanitize_text_field( wp_unslash( $_REQUEST['orderby'] ) ) ) . '" />';
 		if ( ! empty( $_REQUEST['order'] ) )
-			echo '<input type="hidden" name="order" value="' . esc_attr( sanitize_text_field($_REQUEST['order']) ) . '" />';
+			echo '<input type="hidden" name="order" value="' . esc_attr( sanitize_text_field( wp_unslash( $_REQUEST['order'] ) ) ) . '" />';
 		if ( ! empty( $_REQUEST['post_mime_type'] ) )
-			echo '<input type="hidden" name="post_mime_type" value="' . esc_attr( sanitize_text_field($_REQUEST['post_mime_type']) ) . '" />';
+			echo '<input type="hidden" name="post_mime_type" value="' . esc_attr( sanitize_text_field( wp_unslash( $_REQUEST['post_mime_type'] ) ) ) . '" />';
 		if ( ! empty( $_REQUEST['detached'] ) )
-			echo '<input type="hidden" name="detached" value="' . esc_attr( sanitize_text_field($_REQUEST['detached']) ) . '" />';
+			echo '<input type="hidden" name="detached" value="' . esc_attr( sanitize_text_field( wp_unslash( $_REQUEST['detached'] ) ) ) . '" />';
 ?>
 <p class="search-box">
 	<label class="screen-reader-text" for="<?php echo esc_attr($input_id) ?>"><?php echo esc_html($text); ?>:</label>
@@ -443,9 +443,9 @@ class SGPBListTable {
 		if ( empty( $this->_actions ) )
 			return;
 
-		echo "<label for='bulk-action-selector-" . esc_attr( $which ) . "' class='screen-reader-text'>" . esc_html__( 'Select bulk action' ) . "</label>";
+		echo "<label for='bulk-action-selector-" . esc_attr( $which ) . "' class='screen-reader-text'>" . esc_html__( 'Select bulk action', 'popup-builder' ) . "</label>";
 		echo "<select name='action".esc_attr($two)."' id='bulk-action-selector-" . esc_attr( $which ) . "'>\n";
-		echo "<option value='-1' selected='selected'>" . esc_html__( 'Bulk Actions' ) . "</option>\n";
+		echo "<option value='-1' selected='selected'>" . esc_html__( 'Bulk Actions', 'popup-builder' ) . "</option>\n";
 
 		foreach ( $this->_actions as $name => $title ) {
 			$class = 'edit' == $name ? ' class="hide-if-no-js"' : '';
@@ -455,7 +455,7 @@ class SGPBListTable {
 
 		echo "</select>\n";
 
-		submit_button( __( 'Apply' ), 'action', '', false, array( 'id' => "doaction$two" ) );
+		submit_button( __( 'Apply', 'popup-builder'), 'action', '', false, array( 'id' => "doaction$two" ) );
 		echo "\n";
 	}
 
@@ -472,10 +472,10 @@ class SGPBListTable {
 			return false;
 
 		if ( isset( $_REQUEST['action'] ) && -1 != $_REQUEST['action'] )
-			return sanitize_text_field($_REQUEST['action']);
+			return sanitize_text_field( wp_unslash( $_REQUEST['action'] ) );
 
 		if ( isset( $_REQUEST['action2'] ) && -1 != $_REQUEST['action2'] )
-			return sanitize_text_field($_REQUEST['action2']);
+			return sanitize_text_field( wp_unslash( $_REQUEST['action2'] ) );
 
 		return false;
 	}
@@ -505,7 +505,7 @@ class SGPBListTable {
 		}
 		$out .= '</div>';
 
-		$out .= '<button type="button" class="toggle-row"><span class="screen-reader-text">' . __( 'Show more details' ) . '</span></button>';
+		$out .= '<button type="button" class="toggle-row"><span class="screen-reader-text">' . __( 'Show more details', 'popup-builder' ) . '</span></button>';
 
 		return $out;
 	}
@@ -558,11 +558,11 @@ class SGPBListTable {
 		if ( !$month_count || ( 1 == $month_count && 0 == $months[0]->month ) )
 			return;
 
-		$m = isset( $_GET['m'] ) ? (int) sanitize_text_field($_GET['m']) : 0;
+		$m = isset( $_GET['m'] ) ? (int) sanitize_text_field( wp_unslash( $_GET['m'] ) ) : 0;
 ?>
-		<label for="filter-by-date" class="screen-reader-text"><?php esc_html_e( 'Filter by date' ); ?></label>
+		<label for="filter-by-date" class="screen-reader-text"><?php esc_html_e( 'Filter by date', 'popup-builder' ); ?></label>
 		<select name="m" id="filter-by-date">
-			<option<?php selected( $m, 0 ); ?> value="0"><?php esc_html_e( 'All dates' ); ?></option>
+			<option<?php selected( $m, 0 ); ?> value="0"><?php esc_html_e( 'All dates', 'popup-builder' ); ?></option>
 <?php
 		foreach ( $months as $arc_row ) {
 			if ( 0 == $arc_row->year )
@@ -575,7 +575,7 @@ class SGPBListTable {
 				selected( $m, $year . $month, false ),
 				esc_attr( $arc_row->year . $month ),
 				/* translators: 1: month name, 2: 4-digit year */
-				sprintf( esc_html__( '%1$s %2$d' ), esc_html($wp_locale->get_month( $month )), esc_html($year) )
+				sprintf( esc_html__( '%1$s %2$d', 'popup-builder' ), esc_html($wp_locale->get_month( $month )), esc_html($year) )
 			);
 		}
 ?>
@@ -627,16 +627,16 @@ class SGPBListTable {
 		$approved_comments_number = number_format_i18n( $approved_comments );
 		$pending_comments_number = number_format_i18n( $pending_comments );
 		/* translators: numner comments, numner approved comments */
-		$approved_only_phrase = sprintf( _n( '%s comment', '%s comments', $approved_comments ), $approved_comments_number );
+		$approved_only_phrase = sprintf( _n( '%s comment', '%s comments', $approved_comments,'popup-builder' ), $approved_comments_number );
 		/* translators: numner comments, numner approved comments */
-		$approved_phrase = sprintf( _n( '%s approved comment', '%s approved comments', $approved_comments ), $approved_comments_number );
+		$approved_phrase = sprintf( _n( '%s approved comment', '%s approved comments', $approved_comments,'popup-builder'), $approved_comments_number );
 		/* translators: numner comments, numner pending comments */
-		$pending_phrase = sprintf( _n( '%s pending comment', '%s pending comments', $pending_comments ), $pending_comments_number );
+		$pending_phrase = sprintf( _n( '%s pending comment', '%s pending comments', $pending_comments,'popup-builder' ), $pending_comments_number );
 
 		// No comments at all.
 		if ( ! $approved_comments && ! $pending_comments ) {
 			printf( '<span aria-hidden="true">—</span><span class="screen-reader-text">%s</span>',
-				esc_html__( 'No comments' )
+				esc_html__( 'No comments','popup-builder' )
 			);
 		// Approved comments have different display depending on some conditions.
 		} elseif ( $approved_comments ) {
@@ -648,7 +648,7 @@ class SGPBListTable {
 		} else {
 			printf( wp_kses_post( '<span class="post-com-count post-com-count-no-comments"><span class="comment-count comment-count-no-comments" aria-hidden="true">%s</span><span class="screen-reader-text">%s</span></span>'),
 				esc_html($approved_comments_number),
-				$pending_comments ? esc_html__( 'No approved comments' ) : esc_html__( 'No comments' )
+				$pending_comments ? esc_html__( 'No approved comments','popup-builder' ) : esc_html__( 'No comments','popup-builder' )
 			);
 		}
 
@@ -729,13 +729,13 @@ class SGPBListTable {
 			$infinite_scroll = $this->_pagination_args['infinite_scroll'];
 		}
 		/* translators: total items */
-		$output = '<span class="displaying-num">' . sprintf( _n( '%s item', '%s items', $total_items ), number_format_i18n( $total_items ) ) . '</span>';
+		$output = '<span class="displaying-num">' . sprintf( _n( '%s item', '%s items', $total_items,'popup-builder' ), number_format_i18n( $total_items ) ) . '</span>';
 
 		$current = $this->get_pagenum();
 
 		// phpcs:ignore WordPress.Security.ValidatedSanitizedInput.InputNotSanitized
-		$sbpb_server_host = isset($_SERVER['HTTP_HOST']) ? sanitize_text_field( $_SERVER['HTTP_HOST'] ) : '';
-		$sbpb_server_requesturi = isset($_SERVER['REQUEST_URI']) ? sanitize_text_field( $_SERVER['REQUEST_URI'] ) : '';
+		$sbpb_server_host = isset($_SERVER['HTTP_HOST']) ? sanitize_text_field(  wp_unslash( $_SERVER['HTTP_HOST'] ) ) : '';
+		$sbpb_server_requesturi = isset($_SERVER['REQUEST_URI']) ? sanitize_text_field(  wp_unslash( $_SERVER['REQUEST_URI'] ) ) : '';
 		$current_url = set_url_scheme( 'http://' . $sbpb_server_host . $sbpb_server_requesturi );
 		$current_url = remove_query_arg( array( 'hotkeys_highlight_last', 'hotkeys_highlight_first' ), $current_url );
 
@@ -766,7 +766,7 @@ class SGPBListTable {
 		} else {
 			$page_links[] = sprintf( "<a class='first-page button' href='%s'><span class='screen-reader-text'>%s</span><span aria-hidden='true'>%s</span></a>",
 				esc_url( remove_query_arg( 'paged', $current_url ) ),
-				__( 'First page' ),
+				__( 'First page','popup-builder' ),
 				'&laquo;'
 			);
 		}
@@ -776,31 +776,31 @@ class SGPBListTable {
 		} else {
 			$page_links[] = sprintf( "<a class='prev-page button' href='%s'><span class='screen-reader-text'>%s</span><span aria-hidden='true'>%s</span></a>",
 				esc_url( add_query_arg( 'paged', max( 1, $current-1 ), $current_url ) ),
-				__( 'Previous page' ),
+				__( 'Previous page','popup-builder' ),
 				'&lsaquo;'
 			);
 		}
 
 		if ( 'bottom' == $which ) {
 			$html_current_page  = $current;
-			$total_pages_before = '<span class="screen-reader-text">' . __( 'Current Page' ) . '</span><span id="table-paging" class="paging-input">';
+			$total_pages_before = '<span class="screen-reader-text">' . __( 'Current Page','popup-builder' ) . '</span><span id="table-paging" class="paging-input">';
 		} else {
 			$html_current_page = sprintf( "%s<input class='current-page' id='current-page-selector' type='text' name='paged' value='%s' size='%d' aria-describedby='table-paging' />",
-				'<label for="current-page-selector" class="screen-reader-text">' . __( 'Current Page' ) . '</label>',
+				'<label for="current-page-selector" class="screen-reader-text">' . __( 'Current Page','popup-builder' ) . '</label>',
 				$current,
 				strlen( $total_pages )
 			);
 		}
 		$html_total_pages = sprintf( "<span class='total-pages'>%s</span>", number_format_i18n( $total_pages ) );
 		/* translators: current page,  total pages */
-		$page_links[] = $total_pages_before . sprintf( _x( '%1$s of %2$s', 'paging' ), $html_current_page, $html_total_pages ) . $total_pages_after;
+		$page_links[] = $total_pages_before . sprintf( _x( '%1$s of %2$s', 'paging','popup-builder' ), $html_current_page, $html_total_pages ) . $total_pages_after;
 
 		if ( $disable_next ) {
 			$page_links[] = '<span class="tablenav-pages-navspan disabled" aria-hidden="true">&rsaquo;</span>';
 		} else {
 			$page_links[] = sprintf( "<a class='next-page button' href='%s'><span class='screen-reader-text'>%s</span><span aria-hidden='true'>%s</span></a>",
 				esc_url( add_query_arg( 'paged', min( $total_pages, $current+1 ), $current_url ) ),
-				__( 'Next page' ),
+				__( 'Next page','popup-builder' ),
 				'&rsaquo;'
 			);
 		}
@@ -810,7 +810,7 @@ class SGPBListTable {
 		} else {
 			$page_links[] = sprintf( "<a class='last-page button' href='%s'><span class='screen-reader-text'>%s</span><span aria-hidden='true'>%s</span></a>",
 				esc_url( add_query_arg( 'paged', $total_pages, $current_url ) ),
-				__( 'Last page' ),
+				__( 'Last page','popup-builder' ),
 				'&raquo;'
 			);
 		}
@@ -1006,24 +1006,24 @@ class SGPBListTable {
 		list( $columns, $hidden, $sortable, $primary ) = $this->get_column_info();
 
 		// phpcs:ignore WordPress.Security.ValidatedSanitizedInput.InputNotSanitized
-		$sbpb_server_host = isset($_SERVER['HTTP_HOST']) ? sanitize_text_field( $_SERVER['HTTP_HOST'] ) : '';
-		$sbpb_server_requesturi = isset($_SERVER['REQUEST_URI']) ? sanitize_text_field( $_SERVER['REQUEST_URI'] ) : '';
+		$sbpb_server_host = isset($_SERVER['HTTP_HOST']) ? sanitize_text_field(  wp_unslash( $_SERVER['HTTP_HOST'] ) ) : '';
+		$sbpb_server_requesturi = isset($_SERVER['REQUEST_URI']) ? sanitize_text_field(  wp_unslash( $_SERVER['REQUEST_URI'] ) ) : '';
 		$current_url = set_url_scheme( 'http://' . $sbpb_server_host . $sbpb_server_requesturi );
 		$current_url = remove_query_arg( 'paged', $current_url );
 
 		if ( isset( $_GET['orderby'] ) )
-			$current_orderby = sanitize_text_field($_GET['orderby']);
+			$current_orderby = sanitize_text_field( wp_unslash( $_GET['orderby'] ) );
 		else
 			$current_orderby = '';
 
-		if ( isset( $_GET['order'] ) && 'desc' == sanitize_text_field($_GET['order']) )
+		if ( isset( $_GET['order'] ) && 'desc' == sanitize_text_field( wp_unslash( $_GET['order'] ) ) )
 			$current_order = 'desc';
 		else
 			$current_order = 'asc';
 
 		if ( ! empty( $columns['cb'] ) ) {
 			static $cb_counter = 1;
-			$columns['cb'] = '<label class="screen-reader-text" for="cb-select-all-' . $cb_counter . '">' . __( 'Select All' ) . '</label>'
+			$columns['cb'] = '<label class="screen-reader-text" for="cb-select-all-' . $cb_counter . '">' . __( 'Select All','popup-builder' ) . '</label>'
 				. '<input id="cb-select-all-' . $cb_counter . '" type="checkbox" />';
 			$cb_counter++;
 		}
@@ -1274,7 +1274,7 @@ class SGPBListTable {
 	 * @return string The row actions output. In this case, an empty string.
 	 */
 	protected function handle_row_actions( $item, $column_name, $primary ) {
-		return $column_name == $primary ? '<button type="button" class="toggle-row"><span class="screen-reader-text">' . __( 'Show more details' ) . '</span></button>' : '';
+		return $column_name == $primary ? '<button type="button" class="toggle-row"><span class="screen-reader-text">' . __( 'Show more details','popup-builder' ) . '</span></button>' : '';
  	}
 
 	/**
@@ -1300,7 +1300,7 @@ class SGPBListTable {
 		if ( isset( $this->_pagination_args['total_items'] ) ) {			
 			$response['total_items_i18n'] = sprintf(
 				/* translators: total item, total items */
-				_n( '%s item', '%s items', $this->_pagination_args['total_items'] ),
+				_n( '%s item', '%s items', $this->_pagination_args['total_items'],'popup-builder' ),
 				number_format_i18n( $this->_pagination_args['total_items'] )
 			);
 		}

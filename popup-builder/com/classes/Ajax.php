@@ -100,7 +100,7 @@ class Ajax
 		if (!isset($_POST['post_ID'])){
 			wp_die(0);
 		}
-		$popupId = (int)sanitize_text_field($_POST['post_ID']);
+		$popupId = (int)sanitize_text_field( wp_unslash( $_POST['post_ID'] ) );
 		$postStatus = get_post_status($popupId);
 		if($postStatus == 'publish') {
 			wp_die('');
@@ -111,9 +111,9 @@ class Ajax
 		}
 		// we will use array_walk_recursive method for sanitizing current data because we can receive an multidimensional array!
 		// phpcs:ignore WordPress.Security.ValidatedSanitizedInput.InputNotSanitized
-		$allPopupData = $_POST['allPopupData']; //
+		$allPopupData = $_POST['allPopupData'];
 		array_walk_recursive($allPopupData, function(&$item){
-			$item = sanitize_text_field($item);
+			$item = sanitize_text_field( wp_unslash( $item ) );
 		});
 		
 		$popupData = SGPopup::parsePopupDataFromData($allPopupData);
@@ -155,7 +155,7 @@ class Ajax
 		if ( ! current_user_can( 'manage_options' ) ) {			
 			wp_die(esc_html__('You do not have permission to do this action!', 'popup-builder'));
 		}
-		$messageType = isset($_POST['messageType']) ? sanitize_text_field($_POST['messageType']) : '';
+		$messageType = isset($_POST['messageType']) ? sanitize_text_field( wp_unslash( $_POST['messageType'] ) ) : '';
 
 		if($messageType == 'count') {
 			$maxPopupCount = get_option('SGPBMaxOpenCount');
@@ -202,7 +202,7 @@ class Ajax
 		global $wpdb;
 
 		$tableName = $wpdb->prefix.'sgpb_analytics';
-		$popupId = (int)sanitize_text_field($_POST['popupId']);
+		$popupId = (int)sanitize_text_field( wp_unslash( $_POST['popupId'] ) );
 		$allPopupsCount = get_option('SgpbCounter');
 		if($wpdb->get_var("SHOW TABLES LIKE '$tableName'") == $tableName) {
 			SGPopup::deleteAnalyticsDataByPopupId($popupId);
@@ -303,7 +303,7 @@ class Ajax
 		$popupParams = $_POST['params'];
 		/* Sanitizing multidimensional array */
 		array_walk_recursive($popupParams, function(&$item){
-			$item = sanitize_text_field($item);
+			$item = sanitize_text_field( wp_unslash( $item ) );
 		});
 
 		$popupsIdCollection = is_array($popupParams['popupsIdCollection']) ? $popupParams['popupsIdCollection'] : array();
@@ -338,7 +338,7 @@ class Ajax
 		if (empty($_POST['subscribersId'])){
 			wp_die();
 		}
-		$subscribersId = array_map('sanitize_text_field', $_POST['subscribersId']);
+		$subscribersId = array_map('sanitize_text_field', wp_unslash( $_POST['subscribersId'] ) );
 
 		foreach($subscribersId as $subscriberId) {
 			$table_sgpb_subscribers = $wpdb->prefix.SGPB_SUBSCRIBERS_TABLE_NAME;
@@ -358,16 +358,16 @@ class Ajax
 			wp_die(esc_html__('You do not have permission to do this action!', 'popup-builder'));
 		}
 		$status = SGPB_AJAX_STATUS_FALSE;
-		$firstName = isset($_POST['firstName']) ? sanitize_text_field($_POST['firstName']) : '';
-		$lastName = isset($_POST['lastName']) ? sanitize_text_field($_POST['lastName']) : '';
-		$email = isset($_POST['email']) ? sanitize_text_field($_POST['email']) : '';
+		$firstName = isset($_POST['firstName']) ? sanitize_text_field( wp_unslash( $_POST['firstName'] ) ) : '';
+		$lastName = isset($_POST['lastName']) ? sanitize_text_field( wp_unslash( $_POST['lastName'] ) ): '';
+		$email = isset($_POST['email']) ? sanitize_text_field( wp_unslash( $_POST['email'] ) ) : '';
 		$date = gmdate('Y-m-d');
 
 		// we will use array_walk_recursive method for sanitizing current data because we can receive an multidimensional array!
 		// phpcs:ignore WordPress.Security.ValidatedSanitizedInput.InputNotSanitized
 		$subscriptionPopupsId = !empty($_POST['popups']) ? $_POST['popups'] : [];
 		array_walk_recursive($subscriptionPopupsId, function(&$item){
-			$item = sanitize_text_field($item);
+			$item = sanitize_text_field( wp_unslash( $item ) );
 		});
 		$table_sgpb_subscribers = $wpdb->prefix.SGPB_SUBSCRIBERS_TABLE_NAME;
 		foreach($subscriptionPopupsId as $subscriptionPopupId) {			
@@ -400,8 +400,8 @@ class Ajax
 		if ( ! current_user_can( 'manage_options' ) ) {			
 			wp_die(esc_html__('You do not have permission to do this action!', 'popup-builder'));
 		}
-		$formId = isset($_POST['popupSubscriptionList']) ? (int)sanitize_text_field($_POST['popupSubscriptionList']) : '';
-		$fileURL = isset($_POST['importListURL']) ? sanitize_text_field($_POST['importListURL']) : '';
+		$formId = isset($_POST['popupSubscriptionList']) ? (int)sanitize_text_field( wp_unslash( $_POST['popupSubscriptionList'] ) ) : '';
+		$fileURL = isset($_POST['importListURL']) ? sanitize_text_field( wp_unslash( $_POST['importListURL'] ) ) : '';
 		ob_start();
 		require_once SG_POPUP_VIEWS_PATH.'importConfigView.php';
 		$content = ob_get_contents();
@@ -438,14 +438,19 @@ class Ajax
 		if ( ! current_user_can( 'manage_options' ) ) {			
 			wp_die(esc_html__('You do not have permission to do this action!', 'popup-builder'));
 		}
-		@ini_set('auto_detect_line_endings', '1');
-		$formId = isset($_POST['popupSubscriptionList']) ? (int)sanitize_text_field($_POST['popupSubscriptionList']) : '';
-		$fileURL = isset($_POST['importListURL']) ? sanitize_text_field($_POST['importListURL']) : '';
+		
+		if ( function_exists( 'ini_set' ) ) {
+		    @ini_set('auto_detect_line_endings', '1');
+		}
+		
+		$formId = isset($_POST['popupSubscriptionList']) ? (int)sanitize_text_field( wp_unslash( $_POST['popupSubscriptionList'] ) ) : '';
+		$fileURL = isset($_POST['importListURL']) ? sanitize_text_field( wp_unslash( $_POST['importListURL'] ) ) : '';
 		// we will use array_walk_recursive method for sanitizing current data because we can receive an multidimensional array!
 		// phpcs:ignore WordPress.Security.ValidatedSanitizedInput.InputNotSanitized
 		$mapping = !empty($_POST['namesMapping']) ? $_POST['namesMapping'] : [];
 		array_walk_recursive($mapping, function(&$item){
-			$item = sanitize_text_field($item);
+			//slashed before sanitization. Use wp_unslash()
+			$item = sanitize_text_field( wp_unslash( $item ) );
 		});
 
 		$fileContent = AdminHelper::getFileFromURL($fileURL);
@@ -538,13 +543,13 @@ class Ajax
 		if ( ! current_user_can( 'manage_options' ) ) {			
 			wp_die(esc_html__('You do not have permission to do this action!', 'popup-builder'));
 		}	
-		$url = isset($_POST['iframeUrl']) ? esc_url_raw($_POST['iframeUrl']) : '';
+		$url = isset($_POST['iframeUrl']) ? esc_url_raw(  wp_unslash( $_POST['iframeUrl'] ) ) : '';
 		$status = SGPB_AJAX_STATUS_FALSE;
 
 		$remoteGet = wp_remote_get($url);
 
 		if(is_array($remoteGet) && !empty($remoteGet['headers']['x-frame-options'])) {
-			$siteUrl = isset($_POST['siteUrl']) ? esc_url_raw($_POST['siteUrl']) : '';
+			$siteUrl = isset($_POST['siteUrl']) ? esc_url_raw( wp_unslash( $_POST['siteUrl'] ) ) : '';
 			$xFrameOptions = $remoteGet['headers']['x-frame-options'];
 			$mayNotShow = false;
 
@@ -583,7 +588,7 @@ class Ajax
 		if (!isset($_POST['popupId'])){
 			wp_die(esc_html(SGPB_AJAX_STATUS_FALSE));
 		}
-		$popupId = (int)sanitize_text_field($_POST['popupId']);
+		$popupId = (int)sanitize_text_field( wp_unslash( $_POST['popupId'] ) );
 		$obj = SGPopup::find($popupId);
 		$isDraft = '';
 		$postStatus = get_post_status($popupId);
@@ -595,7 +600,7 @@ class Ajax
 			wp_die(esc_html(SGPB_AJAX_STATUS_FALSE));
 		}
 		$options = $obj->getOptions();
-		$options['sgpb-is-active'] = isset($_POST['popupStatus'])? sanitize_text_field($_POST['popupStatus']) : '';
+		$options['sgpb-is-active'] = isset($_POST['popupStatus'])? sanitize_text_field( wp_unslash( $_POST['popupStatus'] ) ) : '';
 
 		if( isset( $options['sgpb-conditions'] ) ){
 			unset( $options['sgpb-conditions'] );
@@ -612,9 +617,10 @@ class Ajax
 		$submissionData = isset($_POST['formData']) ? $_POST['formData'] : "[]";
 		parse_str($submissionData, $formData);
 		array_walk_recursive($formData, function(&$item){
-			$item = sanitize_text_field($item);
+			//slashed before sanitization. Use wp_unslash()
+			$item = sanitize_text_field( wp_unslash( $item ) );
 		});
-		$popupPostId = isset($_POST['popupPostId']) ? (int)sanitize_text_field($_POST['popupPostId']) : '';
+		$popupPostId = isset($_POST['popupPostId']) ? (int)sanitize_text_field( wp_unslash( $_POST['popupPostId'] ) ) : '';
 
 		if(empty($formData)) {
 			echo esc_html( SGPB_AJAX_STATUS_FALSE );
@@ -667,16 +673,17 @@ class Ajax
 		$submissionData = isset($_POST['formData']) ? $_POST['formData'] : "[]";
 		parse_str($submissionData, $formData);
 		array_walk_recursive($formData, function(&$item){
-			$item = sanitize_text_field($item);
+			//slashed before sanitization. Use wp_unslash()
+			$item = sanitize_text_field( wp_unslash( $item ) );
 		});
-		$popupPostId = isset($_POST['popupPostId']) ? (int)sanitize_text_field($_POST['popupPostId']) : '';
+		$popupPostId = isset($_POST['popupPostId']) ? (int)sanitize_text_field( wp_unslash( $_POST['popupPostId'] ) ) : '';
 		if(empty($_POST)) {
 			echo esc_html( SGPB_AJAX_STATUS_FALSE );
 			wp_die();
 		}
-		$email = isset($_POST['emailValue']) ? sanitize_email($_POST['emailValue']) : '';
-		$firstName = isset($_POST['firstNameValue']) ? sanitize_text_field($_POST['firstNameValue']) : '';
-		$lastName = isset($_POST['lastNameValue']) ? sanitize_text_field($_POST['lastNameValue']) : '';
+		$email = isset($_POST['emailValue']) ? sanitize_email( wp_unslash( $_POST['emailValue'] ) ) : '';
+		$firstName = isset($_POST['firstNameValue']) ? sanitize_text_field( wp_unslash( $_POST['firstNameValue'] ) ) : '';
+		$lastName = isset($_POST['lastNameValue']) ? sanitize_text_field( wp_unslash( $_POST['lastNameValue'] ) ) : '';
 		$userData = array(
 			'email'     => $email,
 			'firstName' => $firstName,
@@ -731,8 +738,8 @@ class Ajax
 			wp_die(esc_html__('You do not have permission to do this action!', 'popup-builder'));
 		}
 
-		$postTypeName = isset($_POST['searchKey']) ? sanitize_text_field($_POST['searchKey']) : ''; // TODO strongly validate postTypeName example: use ENUM
-		$search = isset($_POST['searchTerm']) ? sanitize_text_field($_POST['searchTerm']) : '';
+		$postTypeName = isset($_POST['searchKey']) ? sanitize_text_field( wp_unslash( $_POST['searchKey'] ) ) : ''; // TODO strongly validate postTypeName example: use ENUM
+		$search = isset($_POST['searchTerm']) ? sanitize_text_field( wp_unslash( $_POST['searchTerm'] ) ) : '';
 
 		switch($postTypeName){
 			case 'postCategories':
@@ -746,7 +753,7 @@ class Ajax
 		}
 
 		if(isset($_POST['searchCallback'])) {
-			$searchCallback = sanitize_text_field($_POST['searchCallback']);
+			$searchCallback = sanitize_text_field( wp_unslash( $_POST['searchCallback'] ) );
 			$searchResults = apply_filters('sgpbSearchAdditionalData', $search, array());
 		}
 
@@ -790,8 +797,8 @@ class Ajax
 		}
 		global $SGPB_DATA_CONFIG_ARRAY;
 
-		$groupId = isset($_POST['groupId']) ? (int)sanitize_text_field($_POST['groupId']) : '';
-		$targetType = isset($_POST['conditionName']) ? sanitize_text_field($_POST['conditionName']) : '';
+		$groupId = isset($_POST['groupId']) ? (int)sanitize_text_field( wp_unslash( $_POST['groupId'] ) ) : '';
+		$targetType = isset($_POST['conditionName']) ? sanitize_text_field( wp_unslash( $_POST['conditionName'] ) ) : '';
 		$addedObj = array();
 
 		$builderObj = new ConditionBuilder();
@@ -818,11 +825,11 @@ class Ajax
 		}
 		$data = '';
 		global $SGPB_DATA_CONFIG_ARRAY;
-		$targetType = isset($_POST['conditionName']) ? sanitize_text_field($_POST['conditionName']) : '';
+		$targetType = isset($_POST['conditionName']) ? sanitize_text_field( wp_unslash( $_POST['conditionName'] ) ) : '';
 		$builderObj = new ConditionBuilder();
 
-		$groupId = isset($_POST['groupId']) ? (int)sanitize_text_field($_POST['groupId']) : '';
-		$ruleId = isset($_POST['ruleId']) ? (int)sanitize_text_field($_POST['ruleId']) : '';
+		$groupId = isset($_POST['groupId']) ? (int)sanitize_text_field( wp_unslash( $_POST['groupId'] ) ) : '';
+		$ruleId = isset($_POST['ruleId']) ? (int)sanitize_text_field( wp_unslash( $_POST['ruleId'] ) ) : '';
 
 		$builderObj->setGroupId($groupId);
 		$builderObj->setRuleId($ruleId);
@@ -847,13 +854,13 @@ class Ajax
 		$data = '';
 		global $SGPB_DATA_CONFIG_ARRAY;
 
-		$targetType = isset($_POST['conditionName']) ? sanitize_text_field($_POST['conditionName']) : '';
+		$targetType = isset($_POST['conditionName']) ? sanitize_text_field( wp_unslash( $_POST['conditionName'] ) ) : '';
 		$builderObj = new ConditionBuilder();
 		$conditionConfig = $SGPB_DATA_CONFIG_ARRAY[$targetType];
-		$groupId = isset($_POST['groupId']) ? (int)sanitize_text_field($_POST['groupId']) : '';
-		$ruleId = isset($_POST['ruleId']) ? (int)sanitize_text_field($_POST['ruleId']) : '';
-		$popupId = isset($_POST['popupId']) ? (int)sanitize_text_field($_POST['popupId']) : '';
-		$paramName = isset($_POST['paramName']) ? sanitize_text_field($_POST['paramName']) : '';
+		$groupId = isset($_POST['groupId']) ? (int)sanitize_text_field( wp_unslash( $_POST['groupId'] ) ) : '';
+		$ruleId = isset($_POST['ruleId']) ? (int)sanitize_text_field( wp_unslash( $_POST['ruleId'] ) ) : '';
+		$popupId = isset($_POST['popupId']) ? (int)sanitize_text_field( wp_unslash( $_POST['popupId'] ) ) : '';
+		$paramName = isset($_POST['paramName']) ? sanitize_text_field( wp_unslash( $_POST['paramName'] ) ) : '';
 
 		$savedData = array(
 			'param' => $paramName
@@ -866,7 +873,7 @@ class Ajax
 		}
 
 		if(!empty($_POST['paramValue'])) {
-			$savedData['tempParam'] = sanitize_text_field($_POST['paramValue']);
+			$savedData['tempParam'] = sanitize_text_field( wp_unslash( $_POST['paramValue'] ) );
 			$savedData['operator'] = $paramName;
 		}
 		// change operator value related to condition value

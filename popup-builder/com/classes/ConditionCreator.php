@@ -462,7 +462,7 @@ class ConditionCreator
 			$popupId = $conditionObj->getPopupId();
 		}
 		else if(!empty($_GET['post'])) {
-			$popupId = sanitize_text_field($_GET['post']);
+			$popupId = sanitize_text_field( wp_unslash( $_GET['post'] ) );
 		}
 
 		return $popupId;

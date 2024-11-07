@@ -13,7 +13,7 @@ $defaultData = SGPBConfigDataHelper::defaultData();
 $defaultAnimation = esc_attr($popupTypeObj->getOptionValue('sgpb-open-animation-effect'));
 if (!empty($_GET['sgpb_type'])) {
 	if (defined('SGPB_POPUP_TYPE_RECENT_SALES')) {
-		if (sanitize_text_field($_GET['sgpb_type']) == defined('SGPB_POPUP_TYPE_RECENT_SALES') && !$popupTypeObj->getOptionValue('sgpb-open-animation-effect')) {
+		if (sanitize_text_field( wp_unslash( $_GET['sgpb_type'] )) == defined('SGPB_POPUP_TYPE_RECENT_SALES') && !$popupTypeObj->getOptionValue('sgpb-open-animation-effect')) {
 			$defaultAnimation = 'sgpb-fadeIn';
 		}
 	}

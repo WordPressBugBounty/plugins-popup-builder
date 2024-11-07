@@ -6,7 +6,7 @@ if ( ! defined( 'ABSPATH' ) ) {
 }
 $targetData = $popupTypeObj->getOptionValue('sgpb-target');
 $popupTargetData = ConditionBuilder::createTargetConditionBuilder($targetData);
-$type = (!empty($_GET['sgpb_type'])) ? sanitize_text_field($_GET['sgpb_type']) : $popupTypeObj->getOptionValue('sgpb-type');
+$type = (!empty($_GET['sgpb_type'])) ? sanitize_text_field( wp_unslash( $_GET['sgpb_type'] ) ) : $popupTypeObj->getOptionValue('sgpb-type');
 $allowed_html = AdminHelper::allowed_html_tags();
 
 ?>

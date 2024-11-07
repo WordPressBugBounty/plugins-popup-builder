@@ -72,17 +72,24 @@ class SgpbPopupVersionDetection
 
 	private static function checkIfIsOnPopupPage()
 	{
-		if("popupbuilder_page_license" === get_current_screen()->id) {
+		if (function_exists('get_current_screen')) {
+			if( isset( get_current_screen()->id ) && "popupbuilder_page_license" === get_current_screen()->id) {
+				return false;
+			}
+			if(isset( get_current_screen()->post_type ))
+			{
+				switch(get_current_screen()->post_type) {
+					case SG_POPUP_POST_TYPE:
+					case "sgpbtemplate":
+					case "sgpbautoresponder":
+						return true;
+					default:
+						return false;
+				}
+			}
 			return false;
 		}
-		switch(get_current_screen()->post_type) {
-			case SG_POPUP_POST_TYPE:
-			case "sgpbtemplate":
-			case "sgpbautoresponder":
-				return true;
-			default:
-				return false;
-		}
+		return false;
 	}
 
 	private static function getLicenseOfPlugin($oldPlugins)

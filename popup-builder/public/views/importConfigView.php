@@ -5,7 +5,10 @@ if ( ! defined( 'ABSPATH' ) ) {
 }
 use sgpb\AdminHelper;
 use sgpb\SubscriptionPopup;
-@ini_set('auto_detect_line_endings', '1');
+
+if ( function_exists( 'ini_set' ) ) {
+    @ini_set('auto_detect_line_endings', '1');
+}
 
 // Check if file URL is provided
 if (empty($fileURL)) {
@@ -31,6 +34,14 @@ if (empty($fileContent)) {
     // Handle the case where the file content is empty or invalid  
 	echo "ERROR-Failed to retrieve valid file content from the URL.";
     wp_die();
+}
+
+//Decrypt the data when reading it back from the CSV
+$fileContent = AdminHelper::decrypt_data( $fileContent );
+if( $fileContent == false )
+{
+	//try old method of read csv data 
+	$fileContent = AdminHelper::getFileFromURL($fileURL);
 }
 
 // Parse CSV file content into an array

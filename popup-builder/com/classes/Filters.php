@@ -378,7 +378,7 @@ class Filters
 	public function excludePostToShowPrepare()
 	{
 		SgpbPopupConfig::popupTypesInit();
-		$queryString = SGPopup::getActivePopupsQueryString();
+		$queryString = SGPopup::getActivePopupsQueryString();		
 		$this->setQueryString($queryString);
 		add_filter('posts_where' , array($this, 'excludePostsToShow'), 10, 1);
 	}
@@ -728,10 +728,10 @@ class Filters
 				$screen instanceof \WP_Screen &&
 				$screen->id === 'edit-popupbuilder') {
 				if (class_exists('sgpb\SGPopup')) {
-					$activePopupsQuery = $this->getQueryString();
+					$activePopupsQuery = $this->getQueryString();					
 					if ($activePopupsQuery && $activePopupsQuery != '') {
 						$where .= $activePopupsQuery;
-					}
+					}					
 				}
 			}
 		}
@@ -800,6 +800,7 @@ class Filters
 		unset($columns['date']);
 
 		$additionalItems = array();
+		$additionalItems['type'] = __('Type', 'popup-builder');
 		$additionalItems['counter'] = __('Views', 'popup-builder');
 		$additionalItems['onOff'] = __('Status', 'popup-builder');
 		$filterColumnsDisplaySettings = apply_filters('sgpbAddRandomColumnIntoAllPopupsViewTable', $additionalItems);
@@ -807,8 +808,7 @@ class Filters
 		if (isset($filterColumnsDisplaySettings['sgpbIsRandomEnabled'])){
 			$additionalItems = $filterColumnsDisplaySettings;
 		}
-
-		$additionalItems['type'] = __('Type', 'popup-builder');
+		
 		$additionalItems['shortcode'] = __('Shortcode', 'popup-builder');
 		$additionalItems['className'] = __('Class', 'popup-builder');
 		$additionalItems['options'] = __('Actions', 'popup-builder');

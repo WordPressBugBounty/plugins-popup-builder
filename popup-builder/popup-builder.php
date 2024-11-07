@@ -1,9 +1,9 @@
 <?php
 /**
-* Plugin Name: Popup Builder
+* Plugin Name: Popup Builder - Create highly converting, mobile friendly marketing popups.
 * Plugin URI: https://popup-builder.com
 * Description: The most complete popup plugin. Html, image, iframe, shortcode, video and many other popup types. Manage popup dimensions, effects, themes and more.
-* Version: 4.3.4
+* Version: 4.3.5
 * Author: Looking Forward Software Incorporated.
 * Author URI: https://popup-builder.com
 * License: GPLv2

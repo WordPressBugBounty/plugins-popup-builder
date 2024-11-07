@@ -5,7 +5,7 @@ if ( ! defined( 'ABSPATH' ) ) {
 }
 use sgpb\AdminHelper;
 
-$excludePostId = !empty($_GET['post']) ? (int)sanitize_text_field($_GET['post']) : 0;
+$excludePostId = !empty($_GET['post']) ? (int)sanitize_text_field( wp_unslash( $_GET['post'] ) ) : 0;
 $excludedPopups = array($excludePostId);
 $allPopups = AdminHelper::getPopupsIdAndTitle($excludedPopups);
 ?>
