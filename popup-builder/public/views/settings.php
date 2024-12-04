@@ -20,6 +20,10 @@ if (get_option('sgpb-disable-custom-js')) {
 	$disableCustomJs = 'checked';
 }
 
+$disableEnctyptionData = '';
+if (get_option('sgpb-disable-enctyption-data')) {
+	$disableEnctyptionData = 'checked';
+}
 $systemInfo = AdminHelper::getSystemInfoText();
 $userSavedRoles = get_option('sgpb-user-roles');
 
@@ -33,6 +37,20 @@ if( isset( $_GET['hide_injection'] ) && $_GET['hide_injection'] == true )
 	update_option('sgpb-hide_disable-injection-warning', 1);
 	echo '<style>.notice_sgpb.sgpb_injecttion_notice{ display: none !important;}</style>';
 }
+
+$suggest_code = rtrim( base64_encode( get_option('admin_email')) , '=' );
+
+$secret_keycode = get_option('sgpb-secret-code') ? get_option('sgpb-secret-code') : $suggest_code;
+$attr['type'] = 'text';
+$attr['name'] = 'sgpb-secret-code';
+$attr['class'] = 'sgpb-input-text';
+//this is done to override the initial input value
+if ( !empty($secret_keycode) ) {
+	$attr['value'] = esc_attr( $secret_keycode );
+}
+
+$secret_keycodeField = AdminHelper::createInput( $suggest_code, $secret_keycode, $attr );
+
 ?>
 
 <div class="sgpb sgpb-wrapper">
@@ -98,6 +116,29 @@ if( isset( $_GET['hide_injection'] ) && $_GET['hide_injection'] == true )
 						</span>
 					</div>
 				</div>
+				<div class="formItem">
+					<p class="subFormItem__title sgpb-flex-220"><?php esc_html_e('Disable The Enctyption Data For Import/Export of Subscribers', 'popup-builder')?>:</p>
+					<div class="sgpb-onOffSwitch">
+						<input type="checkbox" name="sgpb-disable-enctyption-data" class="sgpb-onOffSwitch-checkbox" id="sgpb-disable-enctyption-data" <?php echo esc_attr($disableEnctyptionData); ?>>
+						<label class="sgpb-onOffSwitch__label" for="sgpb-disable-enctyption-data">
+							<span class="sgpb-onOffSwitch-inner"></span>
+							<span class="sgpb-onOffSwitch-switch"></span>
+						</label>
+					</div>
+				</div>
+				<div class="formItem">
+					<div class="subFormItem__title sgpb-flex-220"><?php esc_html_e('Token to Import/Export', 'popup-builder')?>:</div>
+					<div class="sgpb-secret-code">
+						<?php echo wp_kses($secret_keycodeField, AdminHelper::allowed_html_tags());?>						
+					</div>
+					<div class="question-mark">B</div>
+					<div class="sgpb-info-wrapper">
+						<span class="infoSelectRepeat samefontStyle sgpb-info-text" style="display: none;">
+							<?php esc_html_e('Use this token in both your old and new site to move your data.', 'popup-builder')?>
+						</span>
+					</div>
+				</div>
+
 				<input type="submit" class="saveCHangeButton sgpb-btn sgpb-btn-blue" value="<?php esc_html_e('Save Changes', 'popup-builder')?>" >
 			</form>
 		</div>

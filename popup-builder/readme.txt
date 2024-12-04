@@ -8,7 +8,7 @@ Tags: popup, pop up, wordpress popup, popup maker, popup builder
 Requires at least: 4.2
 Tested up to: 6.6.1
 Requires PHP: 5.3.3
-Stable tag: 4.3.5
+Stable tag: 4.3.6
 License: GPLv2 or later
 License URI: http://www.gnu.org/licenses/gpl-2.0.html
 
@@ -145,6 +145,10 @@ Go to the Popup Builder settings and set your desired options.
 14. Registration popup
 
 == Changelog ==
+
+= Version 4.3.6
+* Optimization the code for security.
+* Fix the issue with moving trash of Popup Countdown type.
 
 = Version 4.3.5
 * Optimization the code for security.

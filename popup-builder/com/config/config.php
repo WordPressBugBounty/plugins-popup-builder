@@ -132,10 +132,7 @@ class SgpbPopupConfig
 		self::addDefine('SG_POPUP_AUTORESPONDER_POST_TYPE', 'sgpbautoresponder');
 		self::addDefine('SG_POPUP_TEMPLATE_POST_TYPE', 'sgpbtemplate');
 		self::addDefine('SGPB_INACTIVE_EXTENSIONS', 'inactivePBExtensions');
-		self::addDefine('SGPB_POPUP_LICENSE_SCREEN', SG_POPUP_POST_TYPE.'_page_'.SGPB_POPUP_LICENSE);
-		self::addDefine('SGPB_SUBSCRIPTION_ERROR_MESSAGE', __('There was an error while trying to send your request. Please try again', 'popup-builder').'.');
-		self::addDefine('SGPB_SUBSCRIPTION_VALIDATION_MESSAGE', __('This field is required', 'popup-builder').'.');
-		self::addDefine('SGPB_SUBSCRIPTION_EMAIL_MESSAGE', __('Please enter a valid email address', 'popup-builder').'.');
+		self::addDefine('SGPB_POPUP_LICENSE_SCREEN', SG_POPUP_POST_TYPE.'_page_'.SGPB_POPUP_LICENSE);		
 		self::addDefine('SGPB_TRANSIENT_TIMEOUT_HOUR', 60 * MINUTE_IN_SECONDS);
 		self::addDefine('SGPB_TRANSIENT_TIMEOUT_DAY', 24 * HOUR_IN_SECONDS);
 		self::addDefine('SGPB_TRANSIENT_TIMEOUT_WEEK', 7 * DAY_IN_SECONDS);

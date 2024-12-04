@@ -253,7 +253,7 @@ abstract class SGPopup
 	 * @return object|false $obj
 	 */
 	public static function find($popup, $args = array())
-	{
+	{		
 		if (isset($_GET['sg_popup_preview_id'])) {
 			$args['is-preview'] = true;
 		}
@@ -274,13 +274,14 @@ abstract class SGPopup
 			$status = get_post_status($popupId);
 			$popupContent = $popupPost->post_content;
 		}
+		
 		$allowedStatus = array('publish', 'draft', 'private');
 
 		if (!empty($args['status'])) {
 			$allowedStatus = $args['status'];
 		}
 
-		if (!isset($args['checkActivePopupType']) && !in_array($status, $allowedStatus)) {
+		if (!isset($args['checkActivePopupType']) && !in_array($status, $allowedStatus)) {			
 			return $status;
 		}
 		$saveMode = '';
@@ -301,13 +302,13 @@ abstract class SGPopup
 		}
 
 		$savedData = array();
+		
 		if (file_exists(dirname(__FILE__).'/PopupData.php')) {
 			require_once(dirname(__FILE__).'/PopupData.php');			
-			$savedData = PopupData::getPopupDataById($popupId, $saveMode);
+			$savedData = PopupData::getPopupDataById($popupId, $saveMode);			
 		}
 		$savedData = apply_filters('sgpbPopupSavedData', $savedData);
-
-		if (empty($savedData) && $currentPostStatus !== 'trash') {
+		if (empty($savedData) && $currentPostStatus !== 'trash') {			
 			return false;
 		}
 
@@ -318,7 +319,9 @@ abstract class SGPopup
 
 		$popupClassName = self::getPopupClassNameFormType($type);
 		$typePath = self::getPopupTypeClassPath($type);		
-		if (!file_exists($typePath.$popupClassName.'.php')) {
+		
+
+		if (!file_exists($typePath.$popupClassName.'.php')) {			
 			return false;
 		}
 		require_once($typePath.$popupClassName.'.php');
@@ -1798,7 +1801,7 @@ abstract class SGPopup
 		$activePopupsQuery = '';
 		$args = array(
 			'post_type' => SG_POPUP_POST_TYPE,
-			'post_status' => array('trash', 'publish', 'draft', 'auto-draft')
+			'post_status' => array('trash', 'publish', 'draft')
 		);
 		if (!class_exists('SGPBConfigDataHelper')) {
 			return $activePopupsQuery;
@@ -1809,14 +1812,16 @@ abstract class SGPopup
 		$excludePopupsQuery = [];	
 		foreach ($allPopups as $sgpb_post) {
 			$sgpb_id = $sgpb_post->ID;
-			$popup = self::find($sgpb_id, $args);			
+			$popup = self::find($sgpb_id, $args);				
 			if (empty($popup)) {
 				$activePopupsQuery .= $sgpb_id.', ';
-				//Moving all INACTIVATED POPUPs with types disabled
-				$popupOptionsData = SGPopup::getPopupOptionsById( $sgpb_id, '');
-				update_post_meta($sgpb_id, 'sg_popup_options_preview', $popupOptionsData);
-				wp_trash_post($sgpb_id);
-				$excludePopupsQuery[$sgpb_id] = $sgpb_post->post_status;
+				if ( isset($_GET['post_type']) &&  sanitize_text_field( wp_unslash( $_GET['post_type'] ) ) == SG_POPUP_POST_TYPE && ( !isset($_GET['page']) || empty(sanitize_text_field( wp_unslash( $_GET['page'] ) ) ) ) ) {
+					//Moving all INACTIVATED POPUPs with types disabled
+					$popupOptionsData = SGPopup::getPopupOptionsById( $sgpb_id, '');
+					update_post_meta($sgpb_id, 'sg_popup_options_preview', $popupOptionsData);								
+					wp_trash_post($sgpb_id);								
+					$excludePopupsQuery[$sgpb_id] = $sgpb_post->post_status;	
+				}
 			}
 		}
 		SGPopup::$num_excluded_popups = $excludePopupsQuery;		

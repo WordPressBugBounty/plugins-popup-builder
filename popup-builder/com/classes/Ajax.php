@@ -437,11 +437,7 @@ class Ajax
 		*/ 			
 		if ( ! current_user_can( 'manage_options' ) ) {			
 			wp_die(esc_html__('You do not have permission to do this action!', 'popup-builder'));
-		}
-		
-		if ( function_exists( 'ini_set' ) ) {
-		    @ini_set('auto_detect_line_endings', '1');
-		}
+		}	
 		
 		$formId = isset($_POST['popupSubscriptionList']) ? (int)sanitize_text_field( wp_unslash( $_POST['popupSubscriptionList'] ) ) : '';
 		$fileURL = isset($_POST['importListURL']) ? sanitize_text_field( wp_unslash( $_POST['importListURL'] ) ) : '';
@@ -454,10 +450,22 @@ class Ajax
 		});
 
 		$fileContent = AdminHelper::getFileFromURL($fileURL);
-		$csvFileArray = array_map('str_getcsv', file($fileURL));
+		//Decrypt the data when reading it back from the CSV
+		$fileContent = AdminHelper::decrypt_data( $fileContent );
+		if( $fileContent == false )
+		{
+			//try old method of read csv data 
+			$fileContent = AdminHelper::getFileFromURL($fileURL);
+		}
+
+		$csvFileArray = array_map('str_getcsv', explode("\n", $fileContent));
 
 		$header = $csvFileArray[0];
 		unset($csvFileArray[0]);
+		if( isset($csvFileArray[count($csvFileArray)]) && count( $csvFileArray[count($csvFileArray)]) < 2 )
+		{
+			unset($csvFileArray[count($csvFileArray)]);
+		}
 		$subscriptionPlusContent = apply_filters('sgpbImportToSubscriptionList', $csvFileArray, $mapping, $formId);
 
 		// -1 it's mean saved from Subscription Plus

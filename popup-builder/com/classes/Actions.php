@@ -311,6 +311,10 @@ class Actions
 
 	public function wpInit()
 	{
+		SgpbPopupConfig::addDefine('SGPB_SUBSCRIPTION_ERROR_MESSAGE', __('There was an error while trying to send your request. Please try again', 'popup-builder').'.');
+		SgpbPopupConfig::addDefine('SGPB_SUBSCRIPTION_VALIDATION_MESSAGE', __('This field is required', 'popup-builder').'.');
+		SgpbPopupConfig::addDefine('SGPB_SUBSCRIPTION_EMAIL_MESSAGE', __('Please enter a valid email address', 'popup-builder').'.');
+		
 		if (isset($_GET['sgpb_type'])) {
 			$_GET['sgpb_type'] = sanitize_text_field( wp_unslash( $_GET['sgpb_type'] ) );
 			$fields = array(
@@ -1488,19 +1492,25 @@ class Actions
 		return  array('id', 'firstName', 'lastName', 'email', 'cDate', 'subscriptionType');
 	}
 	private function encrypt_data($data, $secret_key) {
-		$cipher_method = 'AES-256-CBC';
-		$iv_length = openssl_cipher_iv_length($cipher_method);
-		$iv = openssl_random_pseudo_bytes($iv_length); // Generate a random initialization vector
-		$encrypted_data = openssl_encrypt($data, $cipher_method, $secret_key, 0, $iv);
-		
-		// Combine the IV and encrypted data (IV is needed for decryption)
-		return base64_encode($iv . $encrypted_data);
+
+		if( !AdminHelper::getOption('sgpb-disable-enctyption-data') )
+		{
+			// Combine the IV and encrypted data (IV is needed for decryption)
+			$sgpb_mahoa_secret_key = base64_encode($secret_key);		
+			$sgpb_mahoa_data = base64_encode( wp_json_encode( $data ) );
+			
+			// Combine the IV and encrypted data (IV is needed for decryption) Return result 
+			$sgpb_encripted = $sgpb_mahoa_secret_key.$sgpb_mahoa_data;
+			return $sgpb_encripted;
+		}
+		return $data;
 	}
 	public function getSubscribersCsvFile()
 	{
 		global $wpdb;
 		$allowToAction = AdminHelper::userCanAccessTo();
 		if (!$allowToAction) {
+
 			wp_redirect(get_home_url());
 			exit();
 		}
@@ -1549,7 +1559,7 @@ class Actions
 		
 		//Encrypt sensitive data before saving it to the CSV.
 		// This should be a strong secret key
-		$secret_key = 'sgpbf9c2b4e569a24d3e04bbfd25c8a5d8f2f91575ecf5ef64f7e9a09d3b53c74b96'; 
+		$secret_key = get_option('sgpb-secret-code') ? get_option('sgpb-secret-code') : rtrim( base64_encode( get_option('admin_email')) , '=' ); 
 		$content = $this->encrypt_data($content, $secret_key);
 		
 		header('Pragma: public');
@@ -1594,7 +1604,9 @@ class Actions
 		$deleteData = 0;
 		$enableDebugMode = 0;
 		$disableAnalytics = 0;
-
+		$disableCustomJs = 0;
+		$disableEnctyptionData = 0;
+		$secret_keycode = '';
 		if (isset($_POST['sgpb-dont-delete-data'])) {
 			$deleteData = 1;
 		}
@@ -1603,6 +1615,9 @@ class Actions
 		}
 		if (isset($_POST['sgpb-disable-custom-js'])) {
 			$disableCustomJs = 1;
+		}
+		if (isset($_POST['sgpb-disable-enctyption-data'])) {
+			$disableEnctyptionData = 1;
 		}
 		if (isset($_POST['sgpb-disable-analytics-general'])) {
 			$disableAnalytics = 1;
@@ -1615,11 +1630,16 @@ class Actions
 			});
 			update_option('sgpb-user-roles', $userRoles);
 		}
+
+		if (!empty($_POST['sgpb-secret-code'])){
+			$secret_keycode = sanitize_text_field( wp_unslash( $_POST['sgpb-secret-code'] ) );
+		}
 		update_option('sgpb-dont-delete-data', $deleteData);
 		update_option('sgpb-enable-debug-mode', $enableDebugMode);
 		update_option('sgpb-disable-analytics-general', $disableAnalytics);
 		update_option('sgpb-disable-custom-js', $disableCustomJs);
-
+		update_option('sgpb-disable-enctyption-data', $disableEnctyptionData);
+		update_option('sgpb-secret-code', $secret_keycode);
 		AdminHelper::filterUserCapabilitiesForTheUserRoles('save');
 
 		wp_redirect(admin_url().'edit.php?post_type='.SG_POPUP_POST_TYPE.'&page='.SG_POPUP_SETTINGS_PAGE);

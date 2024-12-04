@@ -1723,6 +1723,7 @@ class AdminHelper
 		array_shift($registered);
 
 		$systemInfoContent .= "\n".'-- Popup Builder License Data'."\n\n";
+		$systemInfoContent .= 'Token to Import/Export:      '.(get_option('sgpb-secret-code') ? get_option('sgpb-secret-code') : 'nul')."\n";
 		if (!empty($registered)) {
 			foreach ($registered as $singleExntensionData) {
 			    if (empty($singleExntensionData['options'])) {
@@ -2550,18 +2551,19 @@ class AdminHelper
 	}
 	public static function decrypt_data( $encrypted_data ) 
 	{
-		$secret_key = 'sgpbf9c2b4e569a24d3e04bbfd25c8a5d8f2f91575ecf5ef64f7e9a09d3b53c74b96'; 
-		$cipher_method = 'AES-256-CBC';
-		$iv_length = openssl_cipher_iv_length($cipher_method);
-		
-		// Decode base64 encoded data
-		$decoded_data = base64_decode($encrypted_data);
-		
-		// Extract the IV and encrypted data
-		$iv = substr($decoded_data, 0, $iv_length);
-		$encrypted_data = substr($decoded_data, $iv_length);
-		
-		// Decrypt the data
-		return openssl_decrypt($encrypted_data, $cipher_method, $secret_key, 0, $iv);
+		if( !AdminHelper::getOption('sgpb-disable-enctyption-data') )
+		{
+			$secret_key = get_option('sgpb-secret-code') ? get_option('sgpb-secret-code') : rtrim( base64_encode( get_option('admin_email')) , '=' ); 
+
+			// Combine the IV and encrypted data (IV is needed for decryption)
+			$sgpb_mahoa_secret_key = base64_encode($secret_key);
+
+			// Extract the IV and encrypted data
+			$sgpb_encrypted_data = str_replace( $sgpb_mahoa_secret_key, "", $encrypted_data );
+			
+			// Decrypt the data
+			return json_decode( base64_decode( $sgpb_encrypted_data ) ) ;
+		}
+		return $encrypted_data;
 	}	
 }
