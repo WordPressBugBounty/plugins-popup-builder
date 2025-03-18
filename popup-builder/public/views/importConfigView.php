@@ -12,18 +12,12 @@ if (empty($fileURL)) {
 	echo "ERROR-File URL is missing.";
     wp_die();
 }
-// Extract file extension from the URL
-$fileExtension = pathinfo($fileURL, PATHINFO_EXTENSION);
 
-// Check if the file has a CSV extension
-if (strtolower($fileExtension) !== 'csv') {
-    // Handle the case where the file is not a CSV file   
-	echo "ERROR-The provided file is not a CSV file.";
-    wp_die();
-}
+$fileImportPath = get_attached_file( $fileURLID );	
+
 
 // Download file content from the URL
-$fileContent = AdminHelper::getFileFromURL($fileURL);
+$fileContent = AdminHelper::sgpbCustomReadfile($fileImportPath);
 
 // Check if file content is empty or invalid
 if (empty($fileContent)) {
@@ -38,7 +32,7 @@ $fileContent = AdminHelper::decrypt_data( $fileContent );
 if( $fileContent == false )
 {
 	//try old method of read csv data 
-	$fileContent = AdminHelper::getFileFromURL($fileURL);
+	$fileContent = AdminHelper::sgpbCustomReadfile($fileImportPath);
 }
 
 // Parse CSV file content into an array
@@ -93,6 +87,7 @@ $formData =  array('' => 'Select Field') + AdminHelper::getSubscriptionColumnsBy
 		<?php endforeach;?>
 		<input type="hidden" class="sgpb-to-import-popup-id" value="<?php echo esc_attr($formId)?>">
 		<input type="hidden" class="sgpb-imported-file-url" value="<?php echo esc_attr($fileURL)?>">
+		<input type="hidden" class="sgpb-imported-file-id" value="<?php echo esc_attr($fileURLID)?>">
 	</div>
 
 	<div id="importSubscriberFooter">

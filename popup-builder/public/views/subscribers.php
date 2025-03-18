@@ -127,6 +127,7 @@ if ($isEmpty) {
 		</div>
 		<div class="formItem">
 			<input class="formItem__input formItem__input_sgpb-popup-overlay" id="js-import-subscriber-file-url" type="text" size="36" name="js-import-subscriber-file-url" value="" readonly>
+			<input class="formItem__input formItem__input_sgpb-popup-overlay" id="js-import-subscriber-file-id" type="hidden" name="js-import-subscriber-file-id" value="" readonly>
 			<div class="easy-icons-wrapper">
 				<div class="icons__item">
 					<img id="js-import-subscriber-button" class="sgpb-cursor-pointer" src="<?php echo esc_url(SG_POPUP_PUBLIC_URL.'icons/cloud.svg'); ?>" title="<?php esc_html_e('Select file', 'popup-builder')?>" alt="<?php esc_html_e('Select file', 'popup-builder')?>">

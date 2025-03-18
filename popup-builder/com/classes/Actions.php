@@ -75,6 +75,7 @@ class Actions
 		
 		add_filter('wp_count_posts', array($this ,'sgpbExcludePopupsToShowCounter'), 10, 3);
 		add_action( 'wp_trash_post',  array($this, 'sgpb_backupPopupOptionsBeforeTrash') );
+
 	}
 	public function popupbuilder_contrucst()
 	{
@@ -481,9 +482,9 @@ class Actions
 
 	private function registerImporter()
 	{
-		require_once SG_POPUP_LIBS_PATH.'Importer.php';
-		$importer = new WP_Import();
-		register_importer(SG_POPUP_POST_TYPE, SG_POPUP_POST_TYPE, __('Importer', 'popup-builder'), array($importer, 'dispatch'));
+		require_once SG_POPUP_LIBS_PATH.'SGPBImporter.php';
+		$sgpbimporter = new SBPB_WP_Import();
+		register_importer(SG_POPUP_POST_TYPE, SG_POPUP_POST_TYPE, __('Popup Builder Importer Tool: Import popups from other website.', 'popup-builder'), array($sgpbimporter, 'dispatch'));
 	}
 
 	public function pluginLoaded()
@@ -789,7 +790,7 @@ class Actions
 		$selectionQuery = apply_filters('sgpbUserSelectionQuery', $selectionQuery);	
 		
 		$result = $wpdb->get_row( $wpdb->prepare("$selectionQuery and subscriptionType = %d limit 1", $subscriptionFormId), ARRAY_A);//db call ok
-		$currentStateEmailId = (int)$result['id'];
+		$currentStateEmailId = isset($result['id']) ? (int)$result['id'] : 0;
 		$table_subscription = $wpdb->prefix.SGPB_SUBSCRIBERS_TABLE_NAME;
 		$totalSubscribers = $wpdb->get_var( $wpdb->prepare("SELECT count(*) FROM $table_subscription WHERE unsubscribed = 0 and subscriptionType = %d", $subscriptionFormId) );
 
@@ -911,11 +912,38 @@ class Actions
 	public function postTypeInit()
 	{
 		/**
-		 * We only allow administrator to do this action
+		 * We only allow administrator or roles allowed in setting to do this action
 		*/ 			
-		if ( ! current_user_can( 'manage_options' ) ) {
+		
+		$allowToAction = AdminHelper::userCanAccessTo();
+
+		if( !$allowToAction )
+		{
+			/**
+			 * We only allow administrator or roles allowed in setting to do this action
+			*/ 			
+			if ( ! current_user_can( 'manage_options' ) ) {
+				
+				return;
+			}
+		}
+		if( is_user_logged_in() ) {
+		
+			$current_user = get_current_user_id();
+			$sgpb_save_subcribers_custom = get_user_meta( $current_user , 'sgpb_save_subcribers_custom', true);
+				
+			if( isset( $sgpb_save_subcribers_custom ) && sanitize_text_field( wp_unslash( $sgpb_save_subcribers_custom ) ) == '1')
+			{
+				
+				add_filter('upload_dir', [$this, 'sgpb_setCustomUploadSubscribersPathImport']);
+				add_filter('wp_handle_upload_prefilter', [$this, 'sgpb_setCustomNameUploadFilter']);
+			}
+			else
+			{
+				remove_filter('wp_handle_upload_prefilter', [$this, 'sgpb_setCustomNameUploadFilter']);
+				remove_filter('upload_dir', [$this, 'sgpb_setCustomUploadSubscribersPathImport']);
+			}
 			
-			return;
 		}
 
 		$adminUrl = admin_url();
@@ -959,7 +987,8 @@ class Actions
 			*/
 		
 			$this->savePost($postId, $post, false);
-		}	
+		}
+		
 		
 	}
 
@@ -1730,5 +1759,53 @@ class Actions
 			update_post_meta($sgpb_post_id, 'sg_popup_options_preview', $popupOptionsData);
 	    }
 	}
+
+	public function sgpb_setCustomUploadSubscribersPathImport( $dir )
+    {
+        remove_filter('upload_dir', [$this, 'sgpb_setCustomUploadSubscribersPathImport']);
+
+        $dir = wp_upload_dir();
+
+        $path = $dir['basedir'].DIRECTORY_SEPARATOR.'subscribersimportsgpb' ;
+        $url = $dir['baseurl'].'/'.'subscribersimportsgpb';
+
+        add_filter('upload_dir', [$this, 'sgpb_setCustomUploadSubscribersPathImport']);
+
+        if (!is_dir($path)) {
+            wp_mkdir_p($path);
+        }
+
+        if (!file_exists($path . '/.htaccess')) {
+            file_put_contents($path . '/.htaccess', 'deny from all');
+        }
+
+        if (!file_exists($path . '/index.html')) {
+            global $wp_filesystem;
+			if ( ! function_exists( 'WP_Filesystem' ) ) {
+			    require_once ABSPATH . 'wp-admin/includes/file.php';
+			}
+
+			WP_Filesystem();
+
+			if ( $wp_filesystem ) {
+			    $wp_filesystem->touch( $path . '/index.html' );
+			}
+        }
+
+        return array(
+            'path'   => $path,
+            'url'    => $url,
+            'subdir' => '/subscribersimportsgpb',
+        ) + $dir;
+    
+    }
+    public function sgpb_setCustomNameUploadFilter( $file )
+    {
+	    $info = pathinfo($file['name']);
+	    $ext  = empty($info['extension']) ? '' : '.' . $info['extension'];
+	    $name = basename($file['name'], $ext);
+	    $file['name'] = 'sgpb_'. $name . $ext;
+		return $file; 
+    }
 
 }

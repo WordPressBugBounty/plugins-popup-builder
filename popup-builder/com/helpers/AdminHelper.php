@@ -381,6 +381,7 @@ class AdminHelper
 		if ($searchQuery != '') {
 			$query .= " WHERE $searchQuery";
 		}
+		
 		// phpcs:ignore WordPress.DB.PreparedSQL.NotPrepared -- No applicable variables for this query.
 		return $wpdb->prepare( $query, $array_mapping_search );
 	}
@@ -1244,7 +1245,40 @@ class AdminHelper
 
 		return $headers;
 	}
+/**
+	 * Get file content from URL
+	 *
+	 * @since 3.1.0
+	 *
+	 * @param $url
+	 *
+	 * @return string
+	 */
+	public static function sgpbCustomReadfile( $file_path ) {
+		// Ensure the WP_Filesystem class is available
+		if ( !function_exists('get_filesystem_method') ) {
+			require_once ABSPATH . 'wp-admin/includes/file.php';
+		}
 
+		// Initialize WP_Filesystem
+		global $wp_filesystem;
+		if ( empty($wp_filesystem) ) {
+			WP_Filesystem();
+		}
+
+		// Get the file contents
+		$file_contents = $wp_filesystem->get_contents( $file_path );
+
+		// Check if we successfully got the contents
+		if ( $file_contents === false ) {
+			// Handle the error if reading the file failed
+			return; // or handle the error appropriately
+		}
+
+		// Output the file contents
+		return ($file_contents);
+
+	}
 	/**
 	 * Get file content from URL
 	 *
@@ -1266,6 +1300,7 @@ class AdminHelper
 		$data = wp_remote_retrieve_body( $remoteData );
 
 		return $data;
+
 	}
 
 	public static function getRightMetaboxBannerText()
@@ -2126,8 +2161,17 @@ class AdminHelper
 			$allAvailableShortcodes['patternUnsubscribe'] = $patternUnsubscribe;
 		}
 
-		$emailMessageCustom = preg_replace($allAvailableShortcodes['patternBlogName'], $newsletterOptions['blogname'], $emailMessage);
-		$emailMessageCustom = preg_replace($allAvailableShortcodes['patternUserName'], $newsletterOptions['username'], $emailMessageCustom);
+		$emailMessageCustom = preg_replace(
+		    $allAvailableShortcodes['patternBlogName'], 
+		    $newsletterOptions['blogname'] ?? '', 
+		    $emailMessage
+		);
+
+		$emailMessageCustom = preg_replace(
+		    $allAvailableShortcodes['patternUserName'], 
+		    $newsletterOptions['username'] ?? '', 
+		    $emailMessageCustom
+		);
 		$emailMessageCustom = str_replace($allAvailableShortcodes['patternUnsubscribe'], '', $emailMessageCustom);
 
 		$mailStatus = wp_mail($emails, $mailSubject, $emailMessageCustom, $headers);
@@ -2565,5 +2609,6 @@ class AdminHelper
 			return json_decode( base64_decode( $sgpb_encrypted_data ) ) ;
 		}
 		return $encrypted_data;
-	}	
+	}
+
 }

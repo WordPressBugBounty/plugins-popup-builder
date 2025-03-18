@@ -160,7 +160,7 @@ class SGPBMenu
 
 				if (!empty($menuItems)) {
 					foreach ($menuItems as $menuItem) {
-						$popupId = $menuItem->sgpbPopupId;
+						$popupId = isset( $menuItem->sgpbPopupId ) ? $menuItem->sgpbPopupId : 0 ;
 						if ($popupId > 0) {
 							self::$navMenuItems[] = $menuItem;
 						}

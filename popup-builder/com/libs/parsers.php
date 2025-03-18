@@ -63,12 +63,21 @@ class WXR_Parser_SimpleXML {
 		$dom = new DOMDocument;
 		$old_value = null;
 		if ( function_exists( 'libxml_disable_entity_loader' ) ) {
-			$old_value = libxml_disable_entity_loader( true );
+			if (defined('PHP_VERSION_ID')) {
+				if (PHP_VERSION_ID < 80000) {
+				    $old_value = libxml_disable_entity_loader( true );
+				}
+			}
 		}
 		
 		$success = $dom->loadXML( file_get_contents( $file ) );// phpcs:ignore WordPress.WP.AlternativeFunctions.file_get_contents_file_get_contents
 		if ( ! is_null( $old_value ) ) {
-			libxml_disable_entity_loader( $old_value );
+			if (defined('PHP_VERSION_ID')) {
+				if (PHP_VERSION_ID < 80000) {
+				    libxml_disable_entity_loader( $old_value );
+				}
+			}
+			
 		}
 
 		if ( ! $success || isset( $dom->doctype ) ) {
