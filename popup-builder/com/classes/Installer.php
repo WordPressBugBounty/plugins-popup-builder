@@ -13,12 +13,12 @@ class Installer
 
 		foreach ($tables as $table) {
 			$pbsgTableName = $wpdb->prefix.$blogId.$table;			
-			$wpdb->query( $wpdb->prepare( "CREATE TABLE IF NOT EXISTS $pbsgTableName") );
+			$wpdb->query( "CREATE TABLE IF NOT EXISTS $pbsgTableName" );
 		}
 
 		return true;
 	}
-
+ 
 	private static function getAllNeededTables()
 	{
 		$tables = array();

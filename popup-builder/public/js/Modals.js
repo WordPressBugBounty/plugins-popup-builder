@@ -33,12 +33,17 @@ SGPBModals.prototype.modalInit = function ()
 SGPBModals.prototype.actionsCloseModal = function (closeOnBackDropClick = false, handleCloseEvent = undefined, handleEventArguments = null)
 {
 	const that = this;
-	jQuery('.sgpb-close-icon, .sgpb-modal-cancel').on('click', function () {
+	jQuery('.sgpb-close-icon, .sgpb-modal-cancel').on('click', function () {		
+		if( jQuery('.sgpb-modal').data('target') == 'importSubscribersSecondStep')
+		{			
+			window.location.reload();
+		}
 		if (typeof handleCloseEvent != 'undefined') {
 			handleCloseEvent(handleEventArguments)
 		}
 		that.moveContentBeforeModalDestroy(jQuery('.sgpb-modal').data('target'), jQuery('.sgpb-modal'));
 		that.destroyModal('cancel');
+
 	});
 	/* handle backdrop click and close */
 	if (closeOnBackDropClick){

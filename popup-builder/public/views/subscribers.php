@@ -45,6 +45,18 @@ if ($isEmpty) {
 <div class="sgpb sgpb-wrapper ">
 	<div class="sgpb-subscription sgpb-padding-20">
 		<h2 class="sgpb-header-h1 sgpb-margin-top-10 sgpb-margin-bottom-40"><?php esc_html_e('Subscribers', 'popup-builder')?></h2>
+		<?php 
+		if ( !empty( get_transient('sgpbImportSubscribersMessaage') ) )
+		{
+			?>
+			<div class="sgpb-alert sgpb-newsletter-notice sgpb-alert-info fade in">	
+				<span class="sgpb-newsletter-test-success-message"><?php echo esc_html( get_transient('sgpbImportSubscribersMessaage') );?></span>
+			</div>
+			<?php
+			delete_transient('sgpbImportSubscribersMessaage'); 
+		}
+		?>
+		
 		<div class="sgpb-margin-bottom-20 sgpb-display-flex sgpb-justify-content-between">
 
 			<div>

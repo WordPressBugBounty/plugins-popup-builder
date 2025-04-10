@@ -1542,18 +1542,23 @@ class AdminHelper
 
 	public static function getSubscriptionColumnsById($id)
 	{
-		$popup = SGPopup::find($id);
+		$popup = SGPopup::find($id);		
 		if (empty($popup) || !is_object($popup)) {
 			return array();
 		}
+		
 		$freeSavedOptions = $popup->getOptionValue('sgpb-subs-fields');
-
 		if (!empty($freeSavedOptions)) {
 			return array('firstName' => 'First name','lastName' => 'Last name', 'email' => 'Email', 'date' => 'Date');
 		}
-		$formFieldsJson = $popup->getOptionValue('sgpb-subscription-fields-json');
+
+		$formFieldsJson = $popup->getOptionValue('sgpb-subscription-fields-json');		
 		if (!empty($formFieldsJson)) {
-			$data = apply_filters('sgpbGetSubscriptionLabels', array(), $popup);
+			$data = apply_filters('sgpbGetSubscriptionLabels', array(), $popup);	
+			//Ted process this in case Subcription Popup but the add-on has been deacitvated		
+			if (empty($data)) {
+				return array('firstName' => 'First name','lastName' => 'Last name', 'email' => 'Email', 'date' => 'Date');
+			}
 			$data['date'] = 'Date';
 			return $data;
 		}

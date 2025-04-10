@@ -604,12 +604,12 @@ class Filters
 			$popupId = $post->ID;
 			$targets = get_post_meta($popupId, 'sg_popup_target_preview', true);
 			if (empty($targets['sgpb-target'][0])) {
-				return $previewLink .= '/?sg_popup_preview_id='.$popupId;
+				return add_query_arg( 'sg_popup_preview_id', $popupId, $previewLink ); 
 			}
 			$targetParams = isset($targets['sgpb-target'][0][0]['param']) ? $targets['sgpb-target'][0][0]['param'] : '';
 			if ((!empty($targetParams) && $targetParams == 'not_rule') || empty($targetParams)) {
 				$previewLink = home_url();
-				$previewLink .= '/?sg_popup_preview_id='.$popupId;
+				$previewLink = add_query_arg( 'sg_popup_preview_id', $popupId, $previewLink );
 
 				return $previewLink;
 			}
@@ -618,7 +618,7 @@ class Filters
 					continue;
 				}
 				$previewLink = self::getPopupPreviewLink($targetValue, $popupId);
-				$previewLink .= '/?sg_popup_preview_id='.$popupId;
+				$previewLink = add_query_arg( 'sg_popup_preview_id', $popupId, $previewLink );
 			}
 		}
 

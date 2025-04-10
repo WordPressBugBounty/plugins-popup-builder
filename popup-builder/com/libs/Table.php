@@ -100,9 +100,9 @@ class SGPBTable extends SGPBListTable
 		
 		$query = $wpdb->prepare( "SELECT $table.$columns_name_placeholders FROM `$table`", str_replace( $table.'.', '', $this->columns ) );
 
-		$this->customizeQuery($query);
+		$this->customizeQuery( $query );
 		
-		$totalItems = count( $wpdb->get_results( $wpdb->prepare( "SELECT $table.$columns_name_placeholders FROM `$table`", str_replace( $table.'.', '', $this->columns ) ) ) ); //return the total number of affected rows
+		$totalItems = count( $wpdb->get_results( $query ) ); //return the total number of affected rows
 		
 		if ($this->previewPopup) {
 			$totalItems -= 1;

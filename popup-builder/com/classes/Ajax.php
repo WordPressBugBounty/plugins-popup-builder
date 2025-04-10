@@ -474,11 +474,15 @@ class Ajax
 			wp_die();
 		}
 		$subscribersId = array_map('sanitize_text_field', wp_unslash( $_POST['subscribersId'] ) );
-
+		$number_deletedSubscribers = 0 ;	
 		foreach($subscribersId as $subscriberId) {
 			$table_sgpb_subscribers = $wpdb->prefix.SGPB_SUBSCRIBERS_TABLE_NAME;
 			$wpdb->query( $wpdb->prepare("DELETE FROM $table_sgpb_subscribers WHERE id = %d", $subscriberId) );
+			$number_deletedSubscribers++;
 		}
+		// translators: %d is the number of subscribers deleted.
+		$notification_deletedSubscribers = sprintf( __('You have deleted %d subscribers successfully!', 'popup-builder'), $number_deletedSubscribers );
+		set_transient('sgpbImportSubscribersMessaage', $notification_deletedSubscribers , 3600);
 	}
 
 	public function addSubscribers()
@@ -515,6 +519,8 @@ class Ajax
 			$item = sanitize_text_field( wp_unslash( $item ) );
 		});
 		$table_sgpb_subscribers = $wpdb->prefix.SGPB_SUBSCRIBERS_TABLE_NAME;
+		$popupPostIds = '';
+		$popupPostTitle = '';
 		foreach($subscriptionPopupsId as $subscriptionPopupId) {			
 			
 			$res = $wpdb->get_row( $wpdb->prepare("SELECT id FROM $table_sgpb_subscribers WHERE email = %s AND subscriptionType = %d", $email, $subscriptionPopupId), ARRAY_A);
@@ -526,12 +532,24 @@ class Ajax
 				$wpdb->query( $wpdb->prepare("UPDATE $table_sgpb_subscribers SET firstName = %s, lastName = %s, email = %s, cDate = %s, subscriptionType = %d, unsubscribered = 0 WHERE id = %d", $firstName, $lastName, $email, $date, $subscriptionPopupId, $res['id']) );
 				$res = 1;
 			}
-
+			$popupPostIds .= $subscriptionPopupId.' ';
+			$popup = get_post($subscriptionPopupId);	
+			if (isset($popup) && is_object( $popup ) ) {
+				$popup_title = isset( $popup->post_title ) ? $popup->post_title : $subscriptionPopupId; 
+				$popupPostTitle .= '`'.$popup_title.'` ';
+			}
+			
 			if($res) {
 				$status = SGPB_AJAX_STATUS_TRUE;
 			}
 		}
-
+		// translators: %s is the title of Popup.
+		$notification_importartSubscriber = sprintf( __('You have imported new subscriber to the %s successfully!', 'popup-builder'), $popupPostIds); 
+		if ( !empty( $popupPostTitle ) ) {	
+			// translators: %s is the title of Popup.			
+			$notification_importartSubscriber = sprintf( __('You have imported new subscriber to the %s popup(s) successfully!', 'popup-builder'), $popupPostTitle ); 
+		}
+		set_transient('sgpbImportSubscribersMessaage', $notification_importartSubscriber , 3600);
 		echo esc_html($status);
 		wp_die();
 	}
@@ -653,20 +671,46 @@ class Ajax
 			global $wpdb;
 			$subscribersTableName = $wpdb->prefix.SGPB_SUBSCRIBERS_TABLE_NAME;	
 			$column_name = "submittedData"; 
-			$check_column = $wpdb->get_results( $wpdb->prepare( "SHOW COLUMNS FROM `$subscribersTableName` LIKE %s", $column_name ) );			
+			$check_column = $wpdb->get_results( $wpdb->prepare( "SHOW COLUMNS FROM `$subscribersTableName` LIKE %s", $column_name ) );	
+			$number_importartSubscribers = 0 ;	
+			$num_original_importrs = 0;	
 			foreach($csvFileArray as $csvData) {				
-				
+				$date = gmdate('Y-m-d', time());
 				if(!empty($mapping['date'])) {
 					$date = $csvData[$mapping['date']];
 					$date = gmdate('Y-m-d', strtotime($date));
 				}
 
-				if( empty( $check_column ) ) {
-					$wpdb->query( $wpdb->prepare("INSERT INTO $subscribersTableName (firstName, lastName, email, cDate, subscriptionType, status, unsubscribed) VALUES (%s, %s, %s, %s, %d, %d, %d) ", $csvData[$mapping['firstName']], $csvData[$mapping['lastName']], $csvData[$mapping['email']], $date, $formId, 0, 0) );
-				} else {
-					$wpdb->query( $wpdb->prepare("INSERT INTO $subscribersTableName (firstName, lastName, email, cDate, subscriptionType, status, unsubscribed, submittedData) VALUES (%s, %s, %s, %s, %d, %d, %d, %s) ", $csvData[$mapping['firstName']], $csvData[$mapping['lastName']], $csvData[$mapping['email']], $csvData[$mapping['date']], $formId, 0, 0, '') );
-				}				
+				$sgpb_check_existed = $wpdb->get_row( $wpdb->prepare("SELECT id FROM $subscribersTableName WHERE email = %s AND subscriptionType = %d", $csvData[$mapping['email']], $formId), ARRAY_A);
+
+				$valid_firstname = isset( $csvData[$mapping['firstName']] ) ?  $csvData[$mapping['firstName']] : '';
+				$valid_lastname = isset( $csvData[$mapping['lastName']] ) ?  $csvData[$mapping['lastName']] : '';
+				$num_original_importrs++;				
+				// add new subscriber
+				if(empty($sgpb_check_existed)) {
+					if( empty( $check_column ) ) {
+						$wpdb->query( $wpdb->prepare("INSERT INTO $subscribersTableName (firstName, lastName, email, cDate, subscriptionType, status, unsubscribed) VALUES (%s, %s, %s, %s, %d, %d, %d) ", $valid_firstname, $valid_lastname, $csvData[$mapping['email']], $date, $formId, 0, 0) );
+					} else {
+						$wpdb->query( $wpdb->prepare("INSERT INTO $subscribersTableName (firstName, lastName, email, cDate, subscriptionType, status, unsubscribed, submittedData) VALUES (%s, %s, %s, %s, %d, %d, %d, %s) ", $valid_firstname, $valid_lastname, $csvData[$mapping['email']], $date, $formId, 0, 0, '') );
+					}
+					$number_importartSubscribers++;	
+				} 		
 			}
+			// translators: %d the number of imported subscribers, %s is the title of Popup.
+			$notification_importartSubscribers = sprintf( __('You have imported %1$d subscribers to the `%2$s` successfully!', 'popup-builder'), $number_importartSubscribers, $formId); 
+			if ( $formId ) {				
+				$popup = get_post($formId);	
+				if (isset($popup) && is_object( $popup ) ) {
+					$popup_title = isset( $popup->post_title ) ? $popup->post_title : $formId; 
+					// translators: %d the number of imported subscribers, %s is the title of Popup.
+					$notification_importartSubscribers = sprintf( __('You have imported %1$d subscribers to the `%2$s`  popup successfully!', 'popup-builder'), $number_importartSubscribers, $popup_title); 
+				}
+				if( $num_original_importrs > $number_importartSubscribers) {
+					// translators: %d the number of imported subscribers.
+					$notification_importartSubscribers .= sprintf( __(' There are %d existing subscribers.', 'popup-builder'), ( $num_original_importrs - $number_importartSubscribers)); 
+				}
+				set_transient('sgpbImportSubscribersMessaage', $notification_importartSubscribers , 3600);
+			}			
 		}
 		//Fix the vulnerable to Sensitive Information Exposure
 		// Get the attachment ID from the URL.
@@ -679,6 +723,8 @@ class Ajax
 				wp_delete_attachment($csv_attachment_id, true);	
 			}
 		}
+
+
 		echo esc_html(SGPB_AJAX_STATUS_TRUE);
 		wp_die();
 	}
@@ -856,7 +902,7 @@ class Ajax
 		if($res) {
 			$status = SGPB_AJAX_STATUS_TRUE;
 		}
-
+		
 		echo esc_html( $status );
 		wp_die();
 	}

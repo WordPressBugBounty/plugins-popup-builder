@@ -87,7 +87,7 @@ class SGPBSubscribers extends SGPBTable
 
 	public function customizeQuery(&$query)
 	{
-		$query = AdminHelper::subscribersRelatedQuery($query);
+		$query = AdminHelper::subscribersRelatedQuery($query);		
 	}
 
 	public function getNavPopupsConditions()
