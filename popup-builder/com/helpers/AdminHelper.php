@@ -2264,7 +2264,7 @@ class AdminHelper
 			$filePath = isset($license['file']) ? $license['file'] : '';
 			$pluginMainFilePath = strpos($filePath, SG_POPUP_PLUGIN_PATH) !== 0 ? SG_POPUP_PLUGIN_PATH.$filePath : $filePath;
 
-			$licenseKey = trim(get_option('sgpb-license-key-'.$key));
+			$licenseKey = trim((string)get_option('sgpb-license-key-'.$key));
 			$status = get_option('sgpb-license-status-'.$key);
 
 			if ($status == false || $status != 'valid') {

@@ -144,7 +144,7 @@ class SgpbPopupConfig
 		self::addDefine('SGPB_RATE_US_NOTIFICATION_ID', 'sgpbMainRateUsNotification');
 		self::addDefine('SGPB_SUPPORT_BANNER_NOTIFICATION_ID', 'sgpbMainSupportBanner');
 		self::addDefine('SGPB_REQUEST_URL', 'https://popup-builder.com/index.php');
-		self::popupTypesInit();
+		add_action( 'init', array( 'SgpbPopupConfig' , 'popupTypesInit') );		
 	}
 
 	public static function popupTypesInit()

@@ -107,7 +107,7 @@ class SgpbPopupVersionDetection
 			}
 
 			$key = isset($license["key"]) ?$license["key"] : '' ;
-			$licenseKey = trim(get_option("sgpb-license-key-".$key));
+			$licenseKey = trim((string)get_option("sgpb-license-key-".$key));
 			$status = get_option("sgpb-license-status-".$key);
 			$license["option_key"] = $licenseKey;
 			$license["option_status"] = $status;

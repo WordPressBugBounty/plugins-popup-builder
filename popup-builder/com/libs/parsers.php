@@ -95,13 +95,13 @@ class WXR_Parser_SimpleXML {
 		if ( ! $wxr_version )
 			return new \WP_Error( 'WXR_parse_error', __( 'This does not appear to be a WXR file, missing/invalid WXR version number', 'popup-builder' ) );
 
-		$wxr_version = (string) trim( $wxr_version[0] );
+		$wxr_version = (string) trim( (string)$wxr_version[0] );
 		// confirm that we are dealing with the correct file format
 		if ( ! preg_match( '/^\d+\.\d+$/', $wxr_version ) )
 			return new \WP_Error( 'WXR_parse_error', __( 'This does not appear to be a WXR file, missing/invalid WXR version number', 'popup-builder' ) );
 
 		$base_url = $xml->xpath('/rss/channel/wp:base_site_url');
-		$base_url = (string) trim( $base_url[0] );
+		$base_url = (string) trim( (string)$base_url[0] );
 
 		$namespaces = $xml->getDocNamespaces();
 		if ( ! isset( $namespaces['wp'] ) )
@@ -373,13 +373,13 @@ class WXR_Parser_XML {
 	}
 
 	function cdata( $parser, $cdata ) {
-		if ( ! trim( $cdata ) )
+		if ( ! trim( (string)$cdata ) )
 			return;
 
 		if ( false !== $this->in_tag || false !== $this->in_sub_tag ) {
 			$this->cdata .= $cdata;
 		} else {
-			$this->cdata .= trim( $cdata );
+			$this->cdata .= trim( (string)$cdata );
 		}
 	}
 
@@ -510,7 +510,7 @@ class WXR_Parser_Regex {
 
 					} elseif ( false !== ( $pos = strpos( $importline, "<$tag>" ) ) ) {
 						// Take note of any content after the opening tag
-						$multiline_content = trim( substr( $importline, $pos + strlen( $tag ) + 2 ) );
+						$multiline_content = trim( (string)substr( $importline, $pos + strlen( $tag ) + 2 ) );
 
 						// We don't want to have this line added to `$is_multiline` below.
 						$importline        = '';
@@ -518,7 +518,7 @@ class WXR_Parser_Regex {
 
 					} elseif ( false !== ( $pos = strpos( $importline, "</$tag>" ) ) ) {
 						$in_multiline          = false;
-						$multiline_content    .= trim( substr( $importline, 0, $pos ) );
+						$multiline_content    .= trim( (string)substr( $importline, 0, $pos ) );
 
 						$this->{$handler[0]}[] = call_user_func( $handler[1], $multiline_content );
 					}

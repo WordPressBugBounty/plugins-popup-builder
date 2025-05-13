@@ -6,9 +6,9 @@ Plugin URI: https://popup-builder.com
 Donate link: https://popup-builder.com
 Tags: popup, pop up, wordpress popup, popup maker, popup builder
 Requires at least: 4.2
-Tested up to: 6.7.2
+Tested up to: 6.8
 Requires PHP: 5.3.3
-Stable tag: 4.3.8
+Stable tag: 4.3.9
 License: GPLv2 or later
 License URI: http://www.gnu.org/licenses/gpl-2.0.html
 
@@ -145,6 +145,10 @@ Go to the Popup Builder settings and set your desired options.
 14. Registration popup
 
 == Changelog ==
+
+= Version 4.3.9
+* Optimization the Popup data loading.
+* Fixe the load_textdomain warning of Wordpress version 6.7 and higher.
 
 = Version 4.3.8
 * Fix the long page title issue.

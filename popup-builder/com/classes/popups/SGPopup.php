@@ -191,7 +191,7 @@ abstract class SGPopup
 		$postId = $this->getId();
 
 		if (!AdminHelper::hasBlocks($this->content)) {
-			$popupContent = wpautop($this->content);
+			$popupContent = wpautop((string)$this->content);
 		} else {
 			$popupContent = $this->content;
 		}
@@ -397,8 +397,8 @@ abstract class SGPopup
 				if (is_array($value)) {
 					$sanitizedValue = $this->recursiveSanitizeTextField($value);
 				}
-				else {
-					$sanitizedValue = htmlspecialchars($value);
+				else {				
+					$sanitizedValue = htmlspecialchars( (string)$value );
 				}
 				break;
 			case 'text':

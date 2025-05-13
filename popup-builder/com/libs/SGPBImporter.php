@@ -1457,7 +1457,7 @@ class SBPB_WP_Import extends WP_Importer
 		$filename = null;
 
 		foreach ( $disposition_header as $value ) {
-			$value = trim( $value );
+			$value = trim( (string)$value );
 
 			if ( strpos( $value, ';' ) === false ) {
 				continue;
@@ -1475,14 +1475,14 @@ class SBPB_WP_Import extends WP_Importer
 
 				list( $key, $value ) = explode( '=', $part, 2 );
 
-				$attributes[ trim( $key ) ] = trim( $value );
+				$attributes[ trim( (string) $key ) ] = trim( (string) $value );
 			}
 
 			if ( empty( $attributes['filename'] ) ) {
 				continue;
 			}
 
-			$filename = trim( $attributes['filename'] );
+			$filename = trim( (string)$attributes['filename'] );
 
 			// Unquote quoted filename, but after trimming.
 			if ( substr( $filename, 0, 1 ) === '"' && substr( $filename, -1, 1 ) === '"' ) {

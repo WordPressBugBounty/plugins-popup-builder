@@ -130,7 +130,7 @@ class Updates
 					}	
 					$this->sgpbVerifyNonceLicense();
 					// retrieve the license from the database
-					$license = trim(get_option('sgpb-license-key-'.$key));
+					$license = trim( (string)get_option('sgpb-license-key-'.$key) );
 					$data = $this->activateLicense($license, $itemId);
 					if (!is_wp_error($data) && $data['response']['code'] == 200) {
 						$dataBody = json_decode($data['body']);
@@ -166,7 +166,7 @@ class Updates
 						wp_die(esc_html__('You do not have permission to access this page!', 'popup-builder'));
 					}	
 					$this->sgpbVerifyNonceLicense();
-					$license = trim(get_option('sgpb-license-key-'.$key));
+					$license = trim((string)get_option('sgpb-license-key-'.$key));
 					// data to send in our API request
 					$response = $this->deactivateLicense($license, $itemId);
 					if (is_wp_error($response) || 200 !== wp_remote_retrieve_response_code($response)) {

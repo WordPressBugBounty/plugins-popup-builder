@@ -91,15 +91,36 @@ class SGPBConfigDataHelper
 
 		return $targetParams;
 	}
-
+	public static function check_edit_sgpopup_on_init() {
+	    if ( is_admin() ) {
+	        if (isset($_GET['post']) && isset($_GET['action']) && $_GET['action'] === 'edit') {
+	            $sgpb_id = intval($_GET['post']);
+	            $sgpb_postype = get_post_type( $sgpb_id );
+	            if ($sgpb_postype && $sgpb_postype == SG_POPUP_POST_TYPE) {
+	                return true;
+	            }
+	        }
+	    }
+	    return false;
+	}
 	public static function addPopupTargetData($targetData)
 	{
-		$allCustomPostTypes = self::$allCustomPosts;
-
+		$sgpb_customPostType_categories = get_option('sgpopup_customPostType_categories');			
+		$allCustomPostTypes = self::$allCustomPosts;		
 		foreach ($allCustomPostTypes as $customPostType) {
 			$targetData[$customPostType.'_all'] = null;
 			$targetData[$customPostType.'_selected'] = '';
-			$targetData[$customPostType.'_categories'] = self::getCustomPostCategories($customPostType);
+			$sgpb_customPostType_cat = isset( $sgpb_customPostType_categories[$customPostType.'_categories'] ) ? $sgpb_customPostType_categories[$customPostType.'_categories'] : null;
+			// fix _prime_term_caches() slow query
+			if( self::check_edit_sgpopup_on_init() == true || !$sgpb_customPostType_cat ) 
+			{
+				$targetData[$customPostType.'_categories'] = self::getCustomPostCategories($customPostType);				
+				update_option( 'sgpopup_customPostType_categories', $targetData );	
+			}
+			else
+			{
+				$targetData[$customPostType.'_categories'] = $sgpb_customPostType_cat;
+			}		
 		}
 
 		return $targetData;
@@ -1369,14 +1390,37 @@ class ConfigDataHelper
 		return $targetParams;
 	}
 
+	public static function check_edit_sgpopup_on_init() {
+	    if ( is_admin() ) {
+	        if (isset($_GET['post']) && isset($_GET['action']) && $_GET['action'] === 'edit') {
+	            $sgpb_id = intval($_GET['post']);
+	            $sgpb_postype = get_post_type( $sgpb_id );
+	            if ($sgpb_postype && $sgpb_postype == SG_POPUP_POST_TYPE) {
+	                return true;
+	            }
+	        }
+	    }
+	    return false;
+	}
+	
 	public static function addPopupTargetData($targetData)
 	{
-		$allCustomPostTypes = self::$allCustomPosts;
-
+		$sgpb_customPostType_categories = get_option('sgpopup_customPostType_categories');			
+		$allCustomPostTypes = self::$allCustomPosts;		
 		foreach ($allCustomPostTypes as $customPostType) {
 			$targetData[$customPostType.'_all'] = null;
 			$targetData[$customPostType.'_selected'] = '';
-			$targetData[$customPostType.'_categories'] = self::getCustomPostCategories($customPostType);
+			$sgpb_customPostType_cat = isset( $sgpb_customPostType_categories[$customPostType.'_categories'] ) ? $sgpb_customPostType_categories[$customPostType.'_categories'] : null;
+			// fix _prime_term_caches() slow query
+			if( self::check_edit_sgpopup_on_init() == true || !$sgpb_customPostType_cat ) 
+			{
+				$targetData[$customPostType.'_categories'] = self::getCustomPostCategories($customPostType);				
+				update_option( 'sgpopup_customPostType_categories', $targetData );	
+			}
+			else
+			{
+				$targetData[$customPostType.'_categories'] = $sgpb_customPostType_cat;
+			}		
 		}
 
 		return $targetData;
