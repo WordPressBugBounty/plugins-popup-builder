@@ -476,7 +476,7 @@ class PopupChecker
 			}
 		}
 
-		if (!$isSatisfy && do_action('isAllowedForTarget', $targetData, $post)) {
+		if (!$isSatisfy && apply_filters('isAllowedForTarget', false, $targetData, $post) ) {
 			$isSatisfy = true;
 		}
 

@@ -649,6 +649,9 @@ class AdminHelper
 
 		//Check if opacity is set(rgba or rgb)
 		if ($opacity !== false) {
+			
+			$opacity = floatval($opacity); 
+
 			if (abs($opacity) > 1) {
 				$opacity = 1.0;
 			}
