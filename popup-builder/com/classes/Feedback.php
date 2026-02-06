@@ -1,6 +1,8 @@
 <?php
 namespace sgpb;
 
+defined( 'ABSPATH' ) || exit;
+
 class SGPBFeedback
 {
 	public function __construct()

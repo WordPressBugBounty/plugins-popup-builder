@@ -1,5 +1,7 @@
 <?php
 namespace sgpb;
+defined( 'ABSPATH' ) || exit;
+
 use \WP_Importer;
 
 if (!class_exists('WP_Importer')) {

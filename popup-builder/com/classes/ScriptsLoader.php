@@ -1,6 +1,8 @@
 <?php
-
 namespace sgpb;
+
+defined( 'ABSPATH' ) || exit;
+
 
 // load popups data's from popups object
 class ScriptsLoader
@@ -138,7 +140,15 @@ class ScriptsLoader
 
 			$popupId = $popup->getId();
 
+			$sgpb_sound_enable = $popup->getOptionValue('sgpb-open-sound');
+			$sgpb_sound_enable_url = $popup->getOptionValue('sgpb-sound-url');					
 			$popupContent = apply_filters('sgpbPopupContentLoadToPage', $popup->getPopupTypeContent(), $popupId);
+
+			if (!empty($sgpb_sound_enable) && !empty($sgpb_sound_enable_url)) {
+				$sgpb_extrasoundiconContent = '<img class="pbsg-sound-notification" id="pbsgsoundnotification" alt="Play sound" title="Play sound" src="'.esc_attr(SG_POPUP_PUBLIC_URL.'icons/volume.svg').'" style="z-index: 999920;position: absolute;
+    float: left;right: 31px;bottom: 0px;width: 40px;cursor: pointer;height: 40px;background-repeat: no-repeat;background-size: cover;">';
+				$popupContent = $sgpb_extrasoundiconContent.$popupContent;
+			}
 
 			$events = $popup->getPopupAllEvents($postId, $popupId, $popup);
 
@@ -173,19 +183,21 @@ class ScriptsLoader
 			$extraContent = apply_filters('sgpbPopupExtraData', $popupId, $currentUseOptions);
 
 			$popupOptions = $this->getEncodedOptionsFromPopup($popup);
-			$popupOptions = apply_filters('sgpbLoadToFooterOptions', $popupOptions);
+			$popupOptions = apply_filters('sgpbLoadToFooterOptions', $popupOptions);						
 			if ($isFromAjax) {
-				$footerPopupContent = '<div class="sgpb-main-popup-data-container-'.esc_attr($popupId).'" style="position:fixed;opacity: 0;filter: opacity(0%);transform: scale(0);">
-							<div class="sg-popup-builder-content" id="sg-popup-content-wrapper-'.esc_attr($popupId).'" data-id="'.esc_attr($popupId).'" data-events="'.esc_attr($events).'" data-options="'.esc_attr($popupOptions).'">
+				$footerPopupContent .= '<div class="sgpb-main-popup-data-container-'.esc_attr($popupId).'" style="position:fixed;opacity: 0;filter: opacity(0%);transform: scale(0);">
+							<div class="sg-popup-builder-content 179" id="sg-popup-content-wrapper-'.esc_attr($popupId).'" data-id="'.esc_attr($popupId).'" data-events="'.esc_attr($events).'" data-options="'.esc_attr($popupOptions).'">
 								<div class="sgpb-popup-builder-content-'.esc_attr($popupId).' sgpb-popup-builder-content-html">'.$popupContent.'</div>
 							</div>
 						  </div>';
 				$footerPopupContent .= $extraContent;
 				$footerContentAjax .= $footerPopupContent;
 			} else {
-				add_action('wp_footer', function() use ($popupId, $events, $popupOptions, $popupContent, $extraContent) {
+				add_action('wp_footer', function() use ($popupId, $events, $popupOptions, $popupContent, $extraContent) {				
+					
+					
 					$footerPopupContent = '<div class="sgpb-main-popup-data-container-'.esc_attr($popupId).'" style="position:fixed;opacity: 0;filter: opacity(0%);transform: scale(0);">
-							<div class="sg-popup-builder-content" id="sg-popup-content-wrapper-'.esc_attr($popupId).'" data-id="'.esc_attr($popupId).'" data-events="'.esc_attr($events).'" data-options="'.esc_attr($popupOptions).'">
+							<div class="sg-popup-builder-content 188" id="sg-popup-content-wrapper-'.esc_attr($popupId).'" data-id="'.esc_attr($popupId).'" data-events="'.esc_attr($events).'" data-options="'.esc_attr($popupOptions).'">
 								<div class="sgpb-popup-builder-content-'.esc_attr($popupId).' sgpb-popup-builder-content-html">'.$popupContent.'</div>
 							</div>
 						  </div>';
@@ -220,7 +232,7 @@ class ScriptsLoader
 
 			add_action('admin_footer', function() use ($popupId, $events, $popupOptions, $popupContent) {
 				$footerPopupContent = '<div style="position:absolute;top: -999999999999999999999px;">
-							<div class="sg-popup-builder-content" id="sg-popup-content-wrapper-'.$popupId.'" data-id="'.esc_attr($popupId).'" data-events="'.esc_attr($events).'" data-options="'.esc_attr($popupOptions).'">
+							<div class="sg-popup-builder-content 223" id="sg-popup-content-wrapper-'.$popupId.'" data-id="'.esc_attr($popupId).'" data-events="'.esc_attr($events).'" data-options="'.esc_attr($popupOptions).'">
 								<div class="sgpb-popup-builder-content-'.esc_attr($popupId).' sgpb-popup-builder-content-html">'.$popupContent.'</div>
 							</div>
 						  </div>';

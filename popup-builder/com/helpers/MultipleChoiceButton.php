@@ -337,7 +337,7 @@ class MultipleChoiceButton
 	 * @return string $attrStr
 	 */
 	private function createAttrs($attrs)
-	{
+	{	
 		$attrStr = '';
 
 		if (empty($attrs)) {
@@ -345,9 +345,13 @@ class MultipleChoiceButton
 		}
 
 		foreach ($attrs as $attrKey => $attrValue) {
-			$attrStr .= $attrKey.'="'.$attrValue.'" ';
+			$attrStr .= sprintf('%s="%s" ',
+	            esc_attr($attrKey),
+	            esc_attr($attrValue)
+        	);
 		}
 
-		return $attrStr;
+		return trim($attrStr);
+
  	}
 }

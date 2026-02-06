@@ -2,6 +2,8 @@
 
 namespace sgpbDataTable;
 
+defined( 'ABSPATH' ) || exit;
+
 use sgpb\AdminHelper;
 use sgpb\SubscriptionPopup;
 require_once(dirname(__FILE__).'/ListTable.php');
@@ -102,6 +104,7 @@ class SGPBTable extends SGPBListTable
 
 		$this->customizeQuery( $query );
 		
+		// phpcs:ignore WordPress.DB.PreparedSQL.NotPrepared
 		$totalItems = count( $wpdb->get_results( $query ) ); //return the total number of affected rows
 		
 		if ($this->previewPopup) {

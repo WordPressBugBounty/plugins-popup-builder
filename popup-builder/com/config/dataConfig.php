@@ -46,8 +46,10 @@ class SgpbDataConfig
 			'Page' => array(
 				'page_all' => __('All pages', 'popup-builder'),
 				'page_selected' => __('Selected pages', 'popup-builder'),
-				'page_type' => __('Page type', 'popup-builder'),
-				'page_template' => __('Page template', 'popup-builder')
+				'page_type' => __('Page type', 'popup-builder'),				
+			),
+			'Templates' => array(
+				'page_template' => __('Post/Page template', 'popup-builder')				
 			),
 			'Tags' => array(
 				'post_tags' => __('All tags', 'popup-builder'),
@@ -187,8 +189,8 @@ class SgpbDataConfig
 					'multiple' => 'multiple'
 				),
 				'infoAttrs' => array(
-					'label' => 'Select page template',
-					'info' => __('Select the page templates on which the popup will be shown.', 'popup-builder')
+					'label' => 'Select Post/page template',
+					'info' => __('Select the page or post templates on which the popup will be shown.', 'popup-builder')
 				)
 			),
 			'post_tags_ids' => array(

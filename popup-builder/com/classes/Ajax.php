@@ -1,5 +1,8 @@
 <?php
 namespace sgpb;
+
+defined( 'ABSPATH' ) || exit;
+
 use \SGPBConfigDataHelper;
 
 class Ajax
@@ -308,8 +311,10 @@ class Ajax
 		if(isset($allPopupsCount[$popupId])) {
 			$allPopupsCount[$popupId] = 0;
 		}
-
-		$popupAnalyticsData = $wpdb->get_var( $wpdb->prepare(' DELETE FROM '.$wpdb->prefix.'sgpb_analytics WHERE target_id = %d AND event_id NOT IN (7, 12, 13)', $popupId));
+		if($wpdb->get_var("SHOW TABLES LIKE '$tableName'") == $tableName) {
+			$popupAnalyticsData = $wpdb->get_var( $wpdb->prepare(' DELETE FROM '.$wpdb->prefix.'sgpb_analytics WHERE target_id = %d AND event_id NOT IN (7, 12, 13)', $popupId));
+		}
+		
 
 		update_option('SgpbCounter', $allPopupsCount);
 
@@ -524,12 +529,22 @@ class Ajax
 		foreach($subscriptionPopupsId as $subscriptionPopupId) {			
 			
 			$res = $wpdb->get_row( $wpdb->prepare("SELECT id FROM $table_sgpb_subscribers WHERE email = %s AND subscriptionType = %d", $email, $subscriptionPopupId), ARRAY_A);
+			
+			// Generate secure unsubscribe token
+			$unsubscribeToken = AdminHelper::generateUnsubscribeToken();
+			
 			// add new subscriber
 			if(empty($res)) {
-				$res = $wpdb->query( $wpdb->prepare("INSERT INTO $table_sgpb_subscribers (firstName, lastName, email, cDate, subscriptionType) VALUES (%s, %s, %s, %s, %d) ", $firstName, $lastName, $email, $date, $subscriptionPopupId) );
+				$res = $wpdb->query( $wpdb->prepare("INSERT INTO $table_sgpb_subscribers (firstName, lastName, email, cDate, subscriptionType, unsubscribe_token) VALUES (%s, %s, %s, %s, %d, %s) ", $firstName, $lastName, $email, $date, $subscriptionPopupId, $unsubscribeToken) );
 			} // edit existing
 			else {
-				$wpdb->query( $wpdb->prepare("UPDATE $table_sgpb_subscribers SET firstName = %s, lastName = %s, email = %s, cDate = %s, subscriptionType = %d, unsubscribered = 0 WHERE id = %d", $firstName, $lastName, $email, $date, $subscriptionPopupId, $res['id']) );
+				// Update token if it doesn't exist, otherwise keep existing token
+				$existingSubscriber = $wpdb->get_row( $wpdb->prepare("SELECT unsubscribe_token FROM $table_sgpb_subscribers WHERE id = %d", $res['id']), ARRAY_A);
+				if (empty($existingSubscriber['unsubscribe_token'])) {
+					$wpdb->query( $wpdb->prepare("UPDATE $table_sgpb_subscribers SET firstName = %s, lastName = %s, email = %s, cDate = %s, subscriptionType = %d, unsubscribered = 0, unsubscribe_token = %s WHERE id = %d", $firstName, $lastName, $email, $date, $subscriptionPopupId, $unsubscribeToken, $res['id']) );
+				} else {
+					$wpdb->query( $wpdb->prepare("UPDATE $table_sgpb_subscribers SET firstName = %s, lastName = %s, email = %s, cDate = %s, subscriptionType = %d, unsubscribered = 0 WHERE id = %d", $firstName, $lastName, $email, $date, $subscriptionPopupId, $res['id']) );
+				}
 				$res = 1;
 			}
 			$popupPostIds .= $subscriptionPopupId.' ';
@@ -683,18 +698,28 @@ class Ajax
 
 				$sgpb_check_existed = $wpdb->get_row( $wpdb->prepare("SELECT id FROM $subscribersTableName WHERE email = %s AND subscriptionType = %d", $csvData[$mapping['email']], $formId), ARRAY_A);
 
-				$valid_firstname = isset( $csvData[$mapping['firstName']] ) ?  $csvData[$mapping['firstName']] : '';
+				$valid_firstname = isset( $csvData[$mapping['firstName']] ) ?  $csvData[$mapping['firstName']] : ''; 
 				$valid_lastname = isset( $csvData[$mapping['lastName']] ) ?  $csvData[$mapping['lastName']] : '';
-				$num_original_importrs++;				
+				$num_original_importrs++;
+				
+				// Generate secure unsubscribe token
+				$unsubscribeToken = AdminHelper::generateUnsubscribeToken();
+				
 				// add new subscriber
 				if(empty($sgpb_check_existed)) {
 					if( empty( $check_column ) ) {
-						$wpdb->query( $wpdb->prepare("INSERT INTO $subscribersTableName (firstName, lastName, email, cDate, subscriptionType, status, unsubscribed) VALUES (%s, %s, %s, %s, %d, %d, %d) ", $valid_firstname, $valid_lastname, $csvData[$mapping['email']], $date, $formId, 0, 0) );
+						$wpdb->query( $wpdb->prepare("INSERT INTO $subscribersTableName (firstName, lastName, email, cDate, subscriptionType, status, unsubscribed, unsubscribe_token) VALUES (%s, %s, %s, %s, %d, %d, %d, %s) ", $valid_firstname, $valid_lastname, $csvData[$mapping['email']], $date, $formId, 0, 0, $unsubscribeToken) );
 					} else {
-						$wpdb->query( $wpdb->prepare("INSERT INTO $subscribersTableName (firstName, lastName, email, cDate, subscriptionType, status, unsubscribed, submittedData) VALUES (%s, %s, %s, %s, %d, %d, %d, %s) ", $valid_firstname, $valid_lastname, $csvData[$mapping['email']], $date, $formId, 0, 0, '') );
+						$wpdb->query( $wpdb->prepare("INSERT INTO $subscribersTableName (firstName, lastName, email, cDate, subscriptionType, status, unsubscribed, submittedData, unsubscribe_token) VALUES (%s, %s, %s, %s, %d, %d, %d, %s, %s) ", $valid_firstname, $valid_lastname, $csvData[$mapping['email']], $date, $formId, 0, 0, '', $unsubscribeToken) );
 					}
 					$number_importartSubscribers++;	
-				} 		
+				} else {
+					// Update token if it doesn't exist for existing subscriber
+					$existingSubscriber = $wpdb->get_row( $wpdb->prepare("SELECT unsubscribe_token FROM $subscribersTableName WHERE id = %d", $sgpb_check_existed['id']), ARRAY_A);
+					if (empty($existingSubscriber['unsubscribe_token'])) {
+						$wpdb->query( $wpdb->prepare("UPDATE $subscribersTableName SET unsubscribe_token = %s WHERE id = %d", $unsubscribeToken, $sgpb_check_existed['id']) );
+					}
+				}
 			}
 			// translators: %d the number of imported subscribers, %s is the title of Popup.
 			$notification_importartSubscribers = sprintf( __('You have imported %1$d subscribers to the `%2$s` successfully!', 'popup-builder'), $number_importartSubscribers, $formId); 
@@ -892,11 +917,20 @@ class Ajax
 		$subscribersTableName = $wpdb->prefix.SGPB_SUBSCRIBERS_TABLE_NAME;
 		$list = $wpdb->get_row( $wpdb->prepare("SELECT id FROM $subscribersTableName WHERE email = %s AND subscriptionType = %d", $email, $popupPostId), ARRAY_A);
 
+		// Generate secure unsubscribe token
+		$unsubscribeToken = AdminHelper::generateUnsubscribeToken();
+
 		// When subscriber does not exist we insert to subscribers table otherwise we update user info
 		if(empty($list['id'])) {
-			$res = $wpdb->query( $wpdb->prepare("INSERT INTO $subscribersTableName (firstName, lastName, email, cDate, subscriptionType) VALUES (%s, %s, %s, %s, %d) ", $firstName, $lastName, $email, $date, $popupPostId) );
+			$res = $wpdb->query( $wpdb->prepare("INSERT INTO $subscribersTableName (firstName, lastName, email, cDate, subscriptionType, unsubscribe_token) VALUES (%s, %s, %s, %s, %d, %s) ", $firstName, $lastName, $email, $date, $popupPostId, $unsubscribeToken) );
 		} else {
-			$wpdb->query( $wpdb->prepare("UPDATE $subscribersTableName SET firstName = %s, lastName = %s, email = %s, cDate = %s, subscriptionType = %d WHERE id = %d", $firstName, $lastName, $email, $date, $popupPostId, $list['id']) );
+			// Update token if it doesn't exist, otherwise keep existing token
+			$existingSubscriber = $wpdb->get_row( $wpdb->prepare("SELECT unsubscribe_token FROM $subscribersTableName WHERE id = %d", $list['id']), ARRAY_A);
+			if (empty($existingSubscriber['unsubscribe_token'])) {
+				$wpdb->query( $wpdb->prepare("UPDATE $subscribersTableName SET firstName = %s, lastName = %s, email = %s, cDate = %s, subscriptionType = %d, unsubscribe_token = %s WHERE id = %d", $firstName, $lastName, $email, $date, $popupPostId, $unsubscribeToken, $list['id']) );
+			} else {
+				$wpdb->query( $wpdb->prepare("UPDATE $subscribersTableName SET firstName = %s, lastName = %s, email = %s, cDate = %s, subscriptionType = %d WHERE id = %d", $firstName, $lastName, $email, $date, $popupPostId, $list['id']) );
+			}
 			$res = 1;
 		}
 		if($res) {
@@ -1037,9 +1071,10 @@ class Ajax
 	{
 		$args = array(
 			's'              => $search,
+			'search_columns' => array( 'post_title' ),
 			'post__in'       => !empty($_REQUEST['include']) ? array_map('intval', $_REQUEST['include']) : null,
 			'page'           => !empty($_REQUEST['page']) ? absint($_REQUEST['page']) : null,
-			'posts_per_page' => 100,
+			'posts_per_page' => 30,
 			'post_type'      => $postTypeName
 		);
 		$searchResults = SGPBConfigDataHelper::getPostTypeData($args);

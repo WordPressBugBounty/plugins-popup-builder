@@ -1,6 +1,9 @@
 <?php
 
 namespace sgpbDataTable;
+
+defined( 'ABSPATH' ) || exit;
+
 use sgpb\AdminHelper;
 
 /**

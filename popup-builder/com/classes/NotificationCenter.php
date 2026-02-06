@@ -1,5 +1,8 @@
 <?php
 namespace sgpb;
+
+defined( 'ABSPATH' ) || exit;
+
 use sgpb\AdminHelper;
 
 class SGPBNotificationCenter

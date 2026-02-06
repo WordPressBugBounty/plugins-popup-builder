@@ -1,5 +1,8 @@
 <?php
 namespace sgpb;
+
+defined( 'ABSPATH' ) || exit;
+
 use \WP_Query;
 use \SgpbPopupConfig;
 use \SgpbDataConfig;
@@ -34,6 +37,7 @@ class Actions
 		add_action('admin_post_csv_file', array($this, 'getSubscribersCsvFile'));
 		add_action('admin_post_sgpb_system_info', array($this, 'getSystemInfoFile'));
 		add_action('admin_post_sgpbSaveSettings', array($this, 'saveSettings'), 10, 1);
+		add_action('admin_post_sgpb_request_new_unsubscribe_link', array($this, 'requestNewUnsubscribeLink'));
 		add_action('admin_init', array($this, 'userRolesCaps'));
 		add_action('admin_notices', array($this, 'pluginNotices'));
 		add_action('admin_init', array($this, 'pluginLoaded'));
@@ -500,6 +504,13 @@ class Actions
 			update_option('sgpbUnsubscribeColumnFixed', 1);
 			delete_option('sgpbUnsubscribeColumn');
 		}
+		
+		// Add unsubscribe_token column for secure unsubscribe tokens
+		$unsubscribeTokenColumnFixed = get_option('sgpbUnsubscribeTokenColumnFixed');
+		if (!$unsubscribeTokenColumnFixed) {
+			AdminHelper::addUnsubscribeTokenColumn();
+			update_option('sgpbUnsubscribeTokenColumnFixed', 1);
+		}
 
 		if ($versionPopup && !$convert) {
 			update_option('sgpbConvertToNewVersion', 1);
@@ -785,11 +796,23 @@ class Actions
 			wp_clear_scheduled_hook('sgpb_send_newsletter');
 			return false;
 		}
-		$table_subscription = $wpdb->prefix.SGPB_SUBSCRIBERS_TABLE_NAME;
-		$selectionQuery = "SELECT id FROM $table_subscription WHERE";
-		$selectionQuery = apply_filters('sgpbUserSelectionQuery', $selectionQuery);	
-		
-		$result = $wpdb->get_row( $wpdb->prepare("$selectionQuery and subscriptionType = %d limit 1", $subscriptionFormId), ARRAY_A);//db call ok
+
+		$table_subscription = $wpdb->prefix . SGPB_SUBSCRIBERS_TABLE_NAME;
+		$result = $wpdb->get_row(
+		    $wpdb->prepare(
+		        "SELECT id 
+		         FROM $table_subscription 
+		         WHERE status = %d 
+		           AND unsubscribed = %d 
+		           AND subscriptionType = %d 
+		         LIMIT 1",
+		        0,
+		        0,
+		        $subscriptionFormId
+		    ),
+		    ARRAY_A
+		);
+
 		$currentStateEmailId = isset($result['id']) ? (int)$result['id'] : 0;
 		$table_subscription = $wpdb->prefix.SGPB_SUBSCRIBERS_TABLE_NAME;
 		$totalSubscribers = $wpdb->get_var( $wpdb->prepare("SELECT count(*) FROM $table_subscription WHERE unsubscribed = 0 and subscriptionType = %d", $subscriptionFormId) );
@@ -817,9 +840,25 @@ class Actions
 			return;
 		}
 
-		$getAllDataSql = 'SELECT id, firstName, lastName, email FROM '.$wpdb->prefix.SGPB_SUBSCRIBERS_TABLE_NAME.' WHERE';
-		$getAllDataSql = apply_filters('sgpbUserSelectionQuery', $getAllDataSql);
-		$subscribers = $wpdb->get_results( $wpdb->prepare( "$getAllDataSql and id >= %d and subscriptionType = %s limit %d", $currentStateEmailId, $subscriptionFormId, $emailsInFlow), ARRAY_A);
+		$table_subscription = $wpdb->prefix . SGPB_SUBSCRIBERS_TABLE_NAME;
+
+		$subscribers = $wpdb->get_results(
+		    $wpdb->prepare(
+		        "
+		        SELECT id, firstName, lastName, email
+		        FROM $table_subscription
+		        WHERE status = 0
+		          AND unsubscribed = 0
+		          AND id >= %d
+		          AND subscriptionType = %s
+		        LIMIT %d
+		        ",
+		        $currentStateEmailId,
+		        $subscriptionFormId,
+		        $emailsInFlow
+		    ),
+		    ARRAY_A
+		); // db call ok
 
 		$subscribers = apply_filters('sgpNewsletterSendingSubscribers', $subscribers);
 
@@ -839,10 +878,25 @@ class Actions
 			$replacementUserName = $newsletterOptions['username'];
 			$replacementEmail = $subscriber['email'];
 			$replacementUnsubscribe = get_home_url();
-			$replacementUnsubscribe .= '?sgpbUnsubscribe='.md5($replacementId.$replacementEmail);
-			$replacementUnsubscribe .= '&email='.$subscriber['email'];
+			
+			// Get or generate secure unsubscribe token
+			global $wpdb;
+			$subscribersTableName = $wpdb->prefix.SGPB_SUBSCRIBERS_TABLE_NAME;
+			$subscriberTokenData = $wpdb->get_row( $wpdb->prepare( "SELECT unsubscribe_token FROM $subscribersTableName WHERE id = %d", $replacementId ), ARRAY_A );
+			
+			$unsubscribeToken = '';
+			if (!empty($subscriberTokenData['unsubscribe_token'])) {
+				$unsubscribeToken = $subscriberTokenData['unsubscribe_token'];
+			} else {
+				// Generate token if it doesn't exist (for backward compatibility)
+				$unsubscribeToken = AdminHelper::generateUnsubscribeToken();
+				$wpdb->query( $wpdb->prepare( "UPDATE $subscribersTableName SET unsubscribe_token = %s WHERE id = %d", $unsubscribeToken, $replacementId ) );
+			}
+			
+			$replacementUnsubscribe .= '?sgpbUnsubscribe='.urlencode($unsubscribeToken);
+			$replacementUnsubscribe .= '&email='.urlencode($subscriber['email']);
 			$replacementUnsubscribe .= '&popup='.$subscriptionFormId;
-			$replacementUnsubscribe = '<br><a href="'.$replacementUnsubscribe.'">'.$title.'</a>';
+			$replacementUnsubscribe = '<br><a href="'.esc_url($replacementUnsubscribe).'">'.$title.'</a>';
 
 			// Replace First name and Last name from email message
 			$emailMessageCustom = preg_replace($allAvailableShortcodes['patternFirstName'], $replacementFirstName, $emailMessage);
@@ -999,6 +1053,13 @@ class Actions
 		 * This happens when User wants to unsubcibe on the Subscription Popup through Link in email.
 		*/ 
 		$unsubscribeArgs = $this->collectUnsubscriberArgs();
+		
+		// Check if this is a request to show the form (expired link)
+		if (isset($_GET['sgpbUnsubscribe']) && sanitize_text_field(wp_unslash($_GET['sgpbUnsubscribe'])) === 'expired') {
+			$popup = isset($_GET['popup']) ? sanitize_text_field(wp_unslash($_GET['popup'])) : '';
+			AdminHelper::displayUnsubscribeLinkRequestForm($popup);
+			wp_die();
+		}
 		
 		if (!empty($unsubscribeArgs)) {
 			$this->unsubscribe($unsubscribeArgs);
@@ -1807,5 +1868,52 @@ class Actions
 	    $file['name'] = 'sgpb_'. $name . $ext;
 		return $file; 
     }
+
+	/**
+	 * Handle request for new unsubscribe link when old link is expired
+	 */
+	public function requestNewUnsubscribeLink()
+	{
+		// Verify nonce
+		$nonce = isset($_POST['sgpb_unsubscribe_nonce']) ? sanitize_text_field(wp_unslash($_POST['sgpb_unsubscribe_nonce'])) : '';
+		if (!wp_verify_nonce($nonce, 'sgpb_request_unsubscribe_link')) {
+			wp_redirect(add_query_arg('sgpb_unsubscribe_status', 'error', wp_get_referer()));
+			exit;
+		}
+		
+		// Get and validate email
+		$email = isset($_POST['email']) ? sanitize_email(wp_unslash($_POST['email'])) : '';
+		$popup = isset($_POST['popup']) ? sanitize_text_field(wp_unslash($_POST['popup'])) : '';
+		
+		if (empty($email) || !is_email($email)) {
+			$redirectUrl = add_query_arg(array(
+				'sgpbUnsubscribe' => 'expired',
+				'popup' => $popup,
+				'sgpb_unsubscribe_status' => 'error'
+			), home_url());
+			wp_redirect($redirectUrl);
+			exit;
+		}
+		
+		// Send new unsubscribe link
+		$result = AdminHelper::sendNewUnsubscribeLink($email, $popup);
+		
+		if ($result) {
+			$redirectUrl = add_query_arg(array(
+				'sgpbUnsubscribe' => 'expired',
+				'popup' => $popup,
+				'sgpb_unsubscribe_status' => 'success'
+			), home_url());
+		} else {
+			$redirectUrl = add_query_arg(array(
+				'sgpbUnsubscribe' => 'expired',
+				'popup' => $popup,
+				'sgpb_unsubscribe_status' => 'not_found'
+			), home_url());
+		}
+		
+		wp_redirect($redirectUrl);
+		exit;
+	}
 
 }

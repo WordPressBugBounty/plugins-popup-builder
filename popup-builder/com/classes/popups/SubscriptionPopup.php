@@ -1,5 +1,8 @@
 <?php
 namespace sgpb;
+
+defined( 'ABSPATH' ) || exit;
+
 require_once(dirname(__FILE__).'/SGPopup.php');
 require_once(ABSPATH.'wp-admin/includes/plugin.php');
 

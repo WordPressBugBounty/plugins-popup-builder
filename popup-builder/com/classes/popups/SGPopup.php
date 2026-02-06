@@ -1350,7 +1350,7 @@ abstract class SGPopup
 		unset($args['wrap']);
 		unset($args['event']);
 		unset($args['id']);
-		$attr = AdminHelper::createAttrs($args);
+		$attr = AdminHelper::createAttrs($args, ['event','id']);
 		$allowed_html = AdminHelper::allowed_html_tags();
 		$allowed_wrap_html_tags = AdminHelper::allowed_wrap_html_tags();	
 		if( !in_array( $wrap, $allowed_wrap_html_tags ) )

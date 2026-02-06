@@ -1,6 +1,7 @@
 <?php
-
 namespace sgpb;
+
+defined( 'ABSPATH' ) || exit;
 
 /**
  * Class SGPBMenu

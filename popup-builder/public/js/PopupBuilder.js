@@ -231,11 +231,10 @@ SGPBPopup.playMusic = function(e) {
 	var popupId = parseInt(args.popupId);
 	var options = SGPBPopup.getPopupOptionsById(popupId);
 	var soundUrl = options['sgpb-sound-url'];
-	var soundStatus = options['sgpb-open-sound'];
-
-	if (soundStatus && soundUrl && !window.SGPB_SOUND[popupId]) {
-		var audio = new Audio(soundUrl);
-		audio.play();
+	var soundStatus = options['sgpb-open-sound'];	
+	if (soundStatus && soundUrl ) {
+		var audio = new Audio(soundUrl);		
+		audio.play();		
 		window.SGPB_SOUND[popupId] = audio;
 	}
 };
@@ -2395,8 +2394,20 @@ SgpbEventListener.eventsListenerAfterDocumentReady = function()
 	window.SGPB_SOUND = [];
 
 	sgAddEvent(window, 'sgpbDidOpen', function(e) {
-		SGPBPopup.playMusic(e);
+
+		//Modern browsers block autoplay with sound unless the user has interacted with the page
+		//SGPBPopup.playMusic(e);
+
+		const pbsgsoundnotification = document.querySelector("#pbsgsoundnotification");
+		if (pbsgsoundnotification) {
+	       pbsgsoundnotification.addEventListener("click", () => {
+	            SGPBPopup.playMusic(e);
+	            pbsgsoundnotification.classList.add("fade");
+	        });
+	    }
 	});
+
+	
 
 	sgAddEvent(window, 'sgpbDidClose', function(e) {
 		var args = e.detail;

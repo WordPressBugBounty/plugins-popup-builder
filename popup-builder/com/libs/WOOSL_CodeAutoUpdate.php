@@ -1,6 +1,7 @@
 <?php
-
 namespace sgpb;
+defined( 'ABSPATH' ) || exit;
+
 /**
  * Allows plugins to use their own update API.
  * Note: This updater is not used for Community/Hosted version of the plugin.

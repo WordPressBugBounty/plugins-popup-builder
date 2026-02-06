@@ -1,4 +1,6 @@
 <?php
+defined( 'ABSPATH' ) || exit;
+
 class SGPBConfigDataHelper
 {
 	public static $customPostType;
@@ -247,7 +249,10 @@ class SGPBConfigDataHelper
 			'page.php' => __('Default Template', 'popup-builder')
 		);
 
-		$templates = wp_get_theme()->get_page_templates();
+		$page_templates = wp_get_theme()->get_page_templates();
+		$post_templates = wp_get_theme()->get_page_templates(null, 'post');
+		$templates = array_merge($page_templates, $post_templates);
+
 		if (empty($templates)) {
 			return $pageTemplates;
 		}
@@ -1547,7 +1552,9 @@ class ConfigDataHelper
 			'page.php' => __('Default Template', 'popup-builder')
 		);
 
-		$templates = wp_get_theme()->get_page_templates();
+		$page_templates = wp_get_theme()->get_page_templates();
+		$post_templates = wp_get_theme()->get_page_templates(null, 'post');
+		$templates = array_merge($page_templates, $post_templates);
 		if (empty($templates)) {
 			return $pageTemplates;
 		}

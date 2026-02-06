@@ -3,18 +3,26 @@ namespace sgpb;
 
 class PopupData
 {
-	private static $popupData = array();
+        private static $popupData = array();
 
-	private function __construct()
-	{
-	}
+        private function __construct()
+        {
+        }
 
-	public static function getPopupDataById($popupId, $saveMode = '')
-	{
-		if (!isset(self::$popupData[$popupId])) {
-			self::$popupData[$popupId] = SGPopup::getSavedData($popupId, $saveMode);
-		}
+        public static function getPopupDataById($popupId, $saveMode = '')
+        {
+                if (!is_array(self::$popupData)) {
+                        self::$popupData = [];
+                }
 
-		return self::$popupData[$popupId];
-	}
+                if (!is_scalar($popupId) || empty($popupId)) {
+                        return null;
+                }
+
+                if (!array_key_exists($popupId, self::$popupData)) {
+                        self::$popupData[$popupId] = SGPopup::getSavedData($popupId, $saveMode);
+                }
+
+                return self::$popupData[$popupId];
+        }
 }

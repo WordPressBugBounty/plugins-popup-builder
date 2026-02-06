@@ -1,5 +1,7 @@
 <?php
 namespace sgpb;
+defined( 'ABSPATH' ) || exit;
+
 use \DOMDocument;
 /**
  * WordPress eXtended RSS file parser implementations

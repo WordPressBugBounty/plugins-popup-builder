@@ -1,5 +1,8 @@
 <?php
 namespace sgpb;
+
+defined( 'ABSPATH' ) || exit;
+
 use sgpb\AdminHelper;
 use \SGPBConfigDataHelper;
 
@@ -140,7 +143,9 @@ class ConvertToNewVersion
 		foreach ($subscribers as $subscriber) {
 			$subscriber['subscriptionType'] = $this->getPostByTitle($subscriber['subscriptionType']);
 			$date = gmdate('Y-m-d');
-			$wpdb->query( $wpdb->prepare("INSERT INTO $subscribersTableName (`firstName`, `lastName`, `email`, `cDate`, `subscriptionType`, `unsubscribed`) VALUES (%s, %s, %s, %s, %d, %d) ", $subscriber['firstName'], $subscriber['lastName'], $subscriber['email'], $date, $subscriber['subscriptionType'], 0) );
+			// Generate secure unsubscribe token
+			$unsubscribeToken = AdminHelper::generateUnsubscribeToken();
+			$wpdb->query( $wpdb->prepare("INSERT INTO $subscribersTableName (`firstName`, `lastName`, `email`, `cDate`, `subscriptionType`, `unsubscribed`, `unsubscribe_token`) VALUES (%s, %s, %s, %s, %d, %d, %s) ", $subscriber['firstName'], $subscriber['lastName'], $subscriber['email'], $date, $subscriber['subscriptionType'], 0, $unsubscribeToken) );
 		}
 	}
 

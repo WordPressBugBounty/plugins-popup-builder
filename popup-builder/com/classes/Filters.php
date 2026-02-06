@@ -1,5 +1,9 @@
 <?php
+
 namespace sgpb;
+
+defined( 'ABSPATH' ) || exit;
+
 use \WP_Query;
 use \SgpbPopupConfig;
 use sgpb\PopupBuilderActivePackage;

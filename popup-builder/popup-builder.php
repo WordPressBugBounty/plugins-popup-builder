@@ -3,7 +3,7 @@
 * Plugin Name: Popup Builder - Create highly converting, mobile friendly marketing popups.
 * Plugin URI: https://popup-builder.com
 * Description: The most complete popup plugin. Html, image, iframe, shortcode, video and many other popup types. Manage popup dimensions, effects, themes and more.
-* Version: 4.4.0
+* Version: 4.4.3
 * Author: Looking Forward Software Incorporated.
 * Author URI: https://popup-builder.com
 * License: GPLv2
@@ -36,13 +36,13 @@ add_action('admin_notices', 'sgpb_verify_subscriptionplus_deactivated' );
 function sgpb_verify_subscriptionplus_deactivated() {		
   if (get_transient('sgpb_subscriptionplus_status')) {
         ?>
-        <div class="notice notice-warning is-dismissible">
-            <p><?php 
-            echo wp_kses_post ( __(
-						        'One or more popups with the Subscription Plus Type were deactivated because you deactivated the Popup Builder Subscription Plus add-on. Click <a href="'.esc_url( admin_url( 'edit.php?post_status=trash&post_type=popupbuilder' ) ).'">here</a> to view your Popups.',
-						        'popup-builder'),
-						 );
-					?></p>
+        <div class="notice notice-warning is-dismissible">           
+						<p><?php
+						 /* translators: %s: Edit Popup Link for administrator */ 
+              printf( wp_kses_post ( __(
+						        'One or more popups with the Subscription Plus Type were deactivated because you deactivated the Popup Builder Subscription Plus add-on. Click <a href="%s">here</a> to view your Popups.',
+						        'popup-builder')) , esc_url( admin_url( 'edit.php?post_status=trash&post_type=popupbuilder' ) ) );
+						?></p>
         </div>
         <?php
         // Delete the transient so it only shows once
